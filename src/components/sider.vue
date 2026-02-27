@@ -23,6 +23,9 @@
         <i-setting-two size="20" />
         <span>设置</span>
       </button>
+      <button type="button" class="sidebarBtn sidebarBtnLogout" @click="handleLogout">
+        <span>退出登录</span>
+      </button>
     </div>
   </aside>
 </template>
@@ -36,6 +39,13 @@ const router = useRouter();
 function handleClick(path: string) {
   router.push(path);
   activeMenu.value = path;
+}
+
+function handleLogout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  activeMenu.value = "/project";
+  router.push("/login");
 }
 </script>
 
@@ -84,6 +94,9 @@ function handleClick(path: string) {
 .sidebarFooter {
   padding: 1rem;
   border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .sidebarBtn {
@@ -108,5 +121,9 @@ function handleClick(path: string) {
 .sidebarBtnActive {
   background: var(--hoverMainColor);
   color: var(--mainColor);
+}
+
+.sidebarBtnLogout {
+  color: #ef4444;
 }
 </style>
