@@ -128,13 +128,13 @@
           <div class="aboutData">
             <div class="aboutInfo">
               <div class="aboutLogo">
-                <img src="@/assets/logo.png" alt="ToonFlow Logo" class="logoImg" />
+                <img src="@/assets/logo.png" alt="AI漫剧智能体 Logo" class="logoImg" />
                 <div class="appInfo">
-                  <h2 class="appName">ToonFlow</h2>
+                  <h2 class="appName">AI漫剧智能体</h2>
                   <span class="appVersion">v1.0.6</span>
                 </div>
               </div>
-              <p class="aboutDesc">ToonFlow 是一款开源的 AI 驱动漫画/分镜创作工具，帮助创作者快速生成故事分镜和视频内容。</p>
+              <p class="aboutDesc">AI漫剧智能体是一款开源的 AI 驱动漫画/分镜创作工具，帮助创作者快速生成故事分镜和视频内容。</p>
               <div class="aboutLinks">
                 <div class="linkItem">
                   <div class="linkIcon">
@@ -330,6 +330,7 @@ function getManufacturerName(manufacturer: string): string {
     anthropic: "Anthropic",
     runninghub: "RunningHUB",
     gemini: "Gemini",
+    ricoxueai: "超级斜杠",
     other: "其他",
   };
   return names[manufacturer] || manufacturer;
@@ -349,6 +350,7 @@ function getManufacturerTagColor(manufacturer: string): string {
     anthropic: "volcano",
     runninghub: "gold",
     gemini: "lime",
+    ricoxueai: "red",
   };
   return colors[manufacturer] || "default";
 }

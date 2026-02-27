@@ -5,13 +5,13 @@
 
 <div align="center">
 
-<img src="./logo.png" alt="Toonflow Logo" height="120"/>
+<img src="./logo.png" alt="AI漫剧智能体 Logo" height="120"/>
 
-# Toonflow Web
+# AI漫剧智能体 Web
 
   <p align="center">
     <b>
-      Toonflow Frontend Application
+      AI漫剧智能体 Frontend Application
       <br />
       Modern Web interface built with Vue 3 + TypeScript + Vite
       <br />
@@ -39,7 +39,7 @@
 
 > **This repository only contains the frontend source code, suitable for developers for secondary development or customization.**
 >
-> 🎉 **If you are a regular user wishing to use Toonflow directly, please go to the main repository to download the full client:**
+> 🎉 **If you are a regular user wishing to use AI漫剧智能体 directly, please go to the main repository to download the full client:**
 >
 > | Platform                                                                                                         | Link                                                                            |
 > | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
@@ -76,7 +76,7 @@
 
 # 🎨 Main Feature Modules
 
-Toonflow Web provides a complete frontend for short drama creation, including these core modules:
+AI漫剧智能体 Web provides a complete frontend for short drama creation, including these core modules:
 
 - ✅ **Project Management**  
    Create, edit, and manage drama projects with project status tracking and multi-project parallel development.
@@ -122,7 +122,7 @@ Toonflow Web provides a complete frontend for short drama creation, including th
 
 | User Type                                    | Recommended Solution | GitHub                                                   | Gitee                                                   |
 | -------------------------------------------- | ------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
-| 🎬 **Regular User** - Want to use Toonflow   | Download full client | [Toonflow-app](https://github.com/HBAI-Ltd/Toonflow-app) | [Toonflow-app](https://gitee.com/HBAI-Ltd/Toonflow-app) |
+| 🎬 **Regular User** - Want to use AI漫剧智能体   | Download full client | [Toonflow-app](https://github.com/HBAI-Ltd/Toonflow-app) | [Toonflow-app](https://gitee.com/HBAI-Ltd/Toonflow-app) |
 | 👨‍💻 **Developer** - Want to modify or extend | Continue reading     | This repository                                           | This repository                                         |
 
 ---
@@ -133,7 +133,7 @@ Before developing and running this project, please ensure you have installed:
 
 - ✅ **Node.js**: version 23.11.1 or above
 - ✅ **Yarn**: version 1.22.0 or above (recommended package manager)
-- ✅ **Backend service**: Make sure the Toonflow backend service is running and accessible (available from [GitHub](https://github.com/HBAI-Ltd/Toonflow-app) or [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-app))
+- ✅ **Backend service**: Make sure the AI漫剧智能体 backend service is running and accessible (available from [GitHub](https://github.com/HBAI-Ltd/Toonflow-app) or [Gitee](https://gitee.com/HBAI-Ltd/Toonflow-app))
 
 ## Local Development
 
@@ -272,7 +272,7 @@ yarn license
 ## Project Structure
 
 ```
-📂 Toonflow-web/
+📂 AI漫剧智能体-web/
 ├─ 📂 public/                # Static assets
 ├─ 📂 scripts/               # Build scripts
 │  └─ 📄 license.ts          # License generator script
@@ -384,7 +384,7 @@ VITE_BASE_URL=http://127.0.0.1:60000
 VITE_WS_URL=ws://127.0.0.1:60000
 ```
 
-### Q: I just want to use Toonflow, not develop, what should I do?
+### Q: I just want to use AI漫剧智能体, not develop, what should I do?
 
 **A:** Please go to the main repository to download the complete client:
 
@@ -416,22 +416,22 @@ VITE_WS_URL=ws://127.0.0.1:60000
 
 Group 6:
 
-<img src="./chat6QR.jpg" alt="Toonflow Logo" height="400"/>
+<img src="./chat6QR.jpg" alt="AI漫剧智能体 Logo" height="400"/>
 <p>Scan with WeChat to add. If the QR code expires, submit an Issue for update.</p>
 
 ---
 
 # 💌 Contact Us
 
-📧 Email: [ltlctools@outlook.com](mailto:ltlctools@outlook.com?subject=Toonflow%20Frontend%20Consultation)
+📧 Email: [ltlctools@outlook.com](mailto:ltlctools@outlook.com?subject=AI漫剧智能体%20Frontend%20Consultation)
 
 ---
 
 # 📜 License
 
-Toonflow Web is open-sourced under the AGPL-3.0 license. See details: https://www.gnu.org/licenses/agpl-3.0.html
+AI漫剧智能体 Web is open-sourced under the AGPL-3.0 license. See details: https://www.gnu.org/licenses/agpl-3.0.html
 
-You may use Toonflow Web for any purposes, including commercial, as long as you comply with the AGPL-3.0 terms and conditions.
+You may use AI漫剧智能体 Web for any purposes, including commercial, as long as you comply with the AGPL-3.0 terms and conditions.
 
 If you wish to obtain a proprietary commercial license free from AGPL-3.0 restrictions, please contact us via email.
 
@@ -445,7 +445,7 @@ If you wish to obtain a proprietary commercial license free from AGPL-3.0 restri
 
 # 🙏 Acknowledgements
 
-Thanks to the following open source projects for their strong support for Toonflow Web:
+Thanks to the following open source projects for their strong support for AI漫剧智能体 Web:
 
 - [Vue.js](https://vuejs.org/) - Progressive JavaScript framework
 - [Vite](https://vitejs.dev/) - Next generation frontend build tool
@@ -453,7 +453,7 @@ Thanks to the following open source projects for their strong support for Toonfl
 - [Element Plus](https://element-plus.org/) - Vue 3-based component library
 - [Pinia](https://pinia.vuejs.org/) - Intuitive state management library for Vue
 
-Thanks to the following organizations/units/individuals for supporting Toonflow:
+Thanks to the following organizations/units/individuals for supporting AI漫剧智能体:
 
 <table>
   <tr>

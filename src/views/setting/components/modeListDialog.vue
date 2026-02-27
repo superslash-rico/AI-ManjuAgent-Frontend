@@ -143,6 +143,7 @@ const websites = ref<Record<string, string>>({
   anthropic: "",
   runninghub: "https://www.runninghub.cn/enterprise-api/consumerApi",
   gemini: "https://ai.google.dev/gemini-api/docs/api-key?hl=zh-cn",
+  ricoxueai: "https://api.ricoxueai.cn/pricing",
 });
 
 const currentWebsite = computed(() => {
@@ -162,6 +163,7 @@ const manufacturerNames: Record<string, string> = {
   anthropic: "Anthropic",
   runninghub: "RunningHUB",
   gemini: "Gemini",
+  ricoxueai: "超级斜杠",
   other: "其他",
 };
 
@@ -193,6 +195,7 @@ function getManufacturerColor(manufacturer: string): string {
     anthropic: "volcano",
     runninghub: "gold",
     gemini: "lime",
+    ricoxueai: "red",
     other: "default",
   };
   return colors[manufacturer] || "default";
@@ -252,6 +255,11 @@ const manufacturerDefaultBaseUrls: Record<string, Record<string, string>> = {
     text: "https://api.anthropic.com/v1",
     image: "",
     video: "",
+  },
+  ricoxueai: {
+    text: "https://api.ricoxueai.cn/v1",
+    image: "https://api.ricoxueai.cn/v1",
+    video: "https://api.ricoxueai.cn/v1",
   },
   runninghub: {
     text: "",
@@ -372,6 +380,17 @@ const textModelPresets = {
       { label: "claude-sonnet-4-0", value: "claude-sonnet-4-0" },
       { label: "claude-3-7-sonnet-latest", value: "claude-3-7-sonnet-latest" },
       { label: "claude-3-5-haiku-latest", value: "claude-3-5-haiku-latest" },
+    ],
+  },
+  ricoxueai: {
+    text: [
+      { label: "gpt-4o", value: "gpt-4o" },
+      { label: "gpt-4-turbo", value: "gpt-4-turbo" },
+      { label: "gpt-3.5-turbo", value: "gpt-3.5-turbo" },
+      { label: "gemini-1.5-pro", value: "gemini-1.5-pro" },
+      { label: "gemini-1.5-flash", value: "gemini-1.5-flash" },
+      { label: "claude-3-5-sonnet-20240620", value: "claude-3-5-sonnet-20240620" },
+      { label: "claude-3-opus", value: "claude-3-opus" },
     ],
   },
 };
@@ -515,6 +534,10 @@ const imageModelPresets = {
   apimart: {
     t2i: [{ label: "nanobanana", value: "nanobanana" }],
     i2i: [{ label: "nanobanana", value: "nanobanana" }],
+  },
+  ricoxueai: {
+    t2i: [{ label: "dall-e-3", value: "dall-e-3" }],
+    i2i: [{ label: "dall-e-3", value: "dall-e-3" }],
   },
 };
 
