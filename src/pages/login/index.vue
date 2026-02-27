@@ -6,26 +6,46 @@
         <img :src="logo" alt="logo" class="logo-img" />
         <span class="logo-text">AI漫剧智能体</span>
       </div>
-      <a-form :model="state.user" :rules="state.rules" ref="ruleFormRef" @finish="handleFinish" class="login-form">
-        <a-form-item name="username">
-          <a-input v-model:value="state.user.username" placeholder="请输入账号" autocomplete="username" size="large">
-            <template #prefix>
-              <i-people theme="outline" class="input-icon" />
-            </template>
-          </a-input>
-        </a-form-item>
-        <a-form-item name="password">
-          <a-input-password v-model:value="state.user.password" placeholder="请输入密码" size="large">
-            <template #prefix>
-              <i-lock theme="outline" class="input-icon" />
-            </template>
-          </a-input-password>
-        </a-form-item>
+      <div class="login-type-switch">
+        <a-radio-group v-model:value="loginType" button-style="solid">
+          <a-radio-button value="account">账号登录</a-radio-button>
+          <a-radio-button value="apikey">APIKey登录</a-radio-button>
+        </a-radio-group>
+      </div>
+      <a-form :model="state.user" :rules="formRules" ref="ruleFormRef" @finish="handleFinish" class="login-form">
+        <template v-if="loginType === 'account'">
+          <a-form-item name="username">
+            <a-input v-model:value="state.user.username" placeholder="请输入账号" autocomplete="username" size="large">
+              <template #prefix>
+                <i-people theme="outline" class="input-icon" />
+              </template>
+            </a-input>
+          </a-form-item>
+          <a-form-item name="password">
+            <a-input-password v-model:value="state.user.password" placeholder="请输入密码" size="large">
+              <template #prefix>
+                <i-lock theme="outline" class="input-icon" />
+              </template>
+            </a-input-password>
+          </a-form-item>
+        </template>
+        <template v-else>
+          <a-form-item name="apiKey">
+            <a-input-password
+              v-model:value="state.user.apiKey"
+              placeholder="请输入APIKey（以 sk- 开头）"
+              autocomplete="off"
+              size="large"
+            />
+          </a-form-item>
+        </template>
         <a-form-item>
-          <a-button class="loginBtn" type="primary" size="large" :loading="state.loginLoading" html-type="submit" block>登录</a-button>
+          <a-button class="loginBtn" type="primary" size="large" :loading="state.loginLoading" html-type="submit" block>
+            {{ loginType === "account" ? "登录" : "APIKey登录" }}
+          </a-button>
         </a-form-item>
       </a-form>
-      <a-alert v-if="showHint" class="default-hint" type="info" closable @close="showHint = false">
+      <a-alert v-if="showHint && loginType === 'account'" class="default-hint" type="info" closable @close="showHint = false">
         <template #message>
           <div class="hint-content">
             <p>
@@ -40,34 +60,57 @@
           </div>
         </template>
       </a-alert>
+      <a-alert v-if="loginType === 'apikey'" class="default-hint" type="info">
+        <template #message>
+          <div class="hint-content">
+            <p>请输入超级斜杠 APIKey</p>
+            <p>
+              格式示例：
+              <code>sk-xxxxxxxxxxxxxxxx</code>
+            </p>
+          </div>
+        </template>
+      </a-alert>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import Router from "@/router/index.ts";
-import { Alert, message } from "ant-design-vue";
+import { message } from "ant-design-vue";
 import logo from "@/assets/logo.png";
 import axios from "@/utils/axios";
 
 const svgRef = ref(null);
 const showHint = ref(true);
+const loginType = ref("account");
 const state = ref({
   show: true,
   loginLoading: false,
   user: {
     username: "",
     password: "",
-    captcha: "",
-    identity: "商家",
-  },
-  rules: {
-    username: [{ required: true, message: "请输入您的账号" }],
-    password: [{ required: true, message: "请输入密码" }],
-    captcha: [{ required: true, message: "请输入验证码" }],
+    apiKey: "",
   },
 });
+
+const formRules = computed(() =>
+  loginType.value === "account"
+    ? {
+        username: [{ required: true, message: "请输入您的账号" }],
+        password: [{ required: true, message: "请输入密码" }],
+      }
+    : {
+        apiKey: [
+          { required: true, message: "请输入APIKey" },
+          {
+            validator: (_rule, value) =>
+              value?.startsWith("sk-") ? Promise.resolve() : Promise.reject("APIKey格式错误，必须以'sk-'开头"),
+          },
+        ],
+      },
+);
 
 const svg = ref();
 const captcha = ref();
@@ -77,14 +120,16 @@ onMounted(() => {
 });
 const handleFinish = (values) => {
   state.value.loginLoading = true;
-  const obj = { ...values };
+  const isApiKeyLogin = loginType.value === "apikey";
+  const loginPath = isApiKeyLogin ? "/other/apiKeyLogin" : "/other/login";
+  const obj = isApiKeyLogin ? { apiKey: values.apiKey } : { username: values.username, password: values.password };
   axios
-    .post("/other/login", obj)
+    .post(loginPath, obj)
     .then(({ data }) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.id);
       Router.push("/project");
-      message.success("登录成功");
+      message.success(isApiKeyLogin ? "APIKey登录成功" : "登录成功");
       state.value.loginLoading = false;
     })
     .catch((e) => {
@@ -169,6 +214,12 @@ const resSvg = async () => {
       :deep(.ant-form-item) {
         margin-bottom: 20px;
       }
+    }
+
+    .login-type-switch {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
     }
 
     .loginBtn {

@@ -699,6 +699,15 @@ const videoModelPresets = {
       { label: "viduq3-pro", value: "viduq3-pro" },
     ],
   },
+  ricoxueai: {
+    singleImage: [{ label: "sora-image2video", value: "sora-image2video" }],
+    startEndRequired: [],
+    endFrameOptional: [],
+    startFrameOptional: [],
+    multiImage: [],
+    reference: [],
+    text2video: [{ label: "sora-text2video", value: "sora-text2video" }],
+  },
 };
 
 // 生成视频模型卡片列表
