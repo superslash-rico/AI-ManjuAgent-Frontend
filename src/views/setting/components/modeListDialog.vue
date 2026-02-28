@@ -26,10 +26,20 @@
                     v-for="manufacturer in availableManufacturers"
                     :key="manufacturer.key"
                     :checked="selectedManufacturers.includes(manufacturer.key)"
-                    @change="toggleManufacturer(manufacturer.key)"
-                    class="manufacturer-tag">
+                    class="manufacturer-tag"
+                    @change="toggleManufacturer(manufacturer.key)">
                     <a-badge :color="getManufacturerColor(manufacturer.key)" />
                     {{ manufacturer.name }}
+                    <LoadingOutlined v-if="manufacturer.key === 'ricoxueai' && isFetchingRicoxueai" style="margin-left: 4px" />
+                  </a-checkable-tag>
+                  <a-checkable-tag
+                    v-if="!availableManufacturers.find((m) => m.key === 'ricoxueai')"
+                    :checked="selectedManufacturers.includes('ricoxueai')"
+                    class="manufacturer-tag"
+                    @change="toggleManufacturer('ricoxueai')">
+                    <a-badge :color="getManufacturerColor('ricoxueai')" />
+                    {{ manufacturerNames["ricoxueai"] }}
+                    <LoadingOutlined v-if="isFetchingRicoxueai" style="margin-left: 4px" />
                   </a-checkable-tag>
                 </div>
               </div>
@@ -46,34 +56,69 @@
             <a-divider style="margin: 16px 0" />
 
             <div class="cards-grid">
-              <a-empty v-if="getFilteredModels(tab.key).length === 0" description="未找到匹配的模型" :image="Empty.PRESENTED_IMAGE_SIMPLE" />
+              <div
+                v-if="selectedManufacturers.includes('ricoxueai') && isFetchingRicoxueai"
+                style="grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; padding: 40px 0">
+                <a-spin tip="正在拉取最新模型..." />
+              </div>
               <template v-else>
-                <div
-                  v-for="model in getFilteredModels(tab.key)"
-                  :key="`${model.manufacturer}-${model.modelType}-${model.model}`"
-                  class="model-card"
-                  @click="selectModel(model)">
-                  <div class="card-icon">
-                    <component :is="tab.icon" fill="#9810fa" />
+                <a-empty v-if="getFilteredModels(tab.key).length === 0" description="未找到匹配的模型" :image="Empty.PRESENTED_IMAGE_SIMPLE" />
+                <template v-else>
+                  <div v-if="currentPage === 1" class="model-card custom-card" @click="selectCustomModel(tab.customType)">
+                    <div class="card-icon">
+                      <PlusOutlined />
+                    </div>
+                    <div class="card-header">
+                      <h3>自定义模型</h3>
+                    </div>
+                    <div class="card-body">
+                      <p class="model-description">{{ tab.customDesc }}</p>
+                    </div>
                   </div>
-                  <div class="card-header">
-                    <h3 :title="model.modelName">{{ model.modelName }}</h3>
-                    <a-tag :color="getManufacturerColor(model.manufacturer)">{{ model.manufacturerName }}</a-tag>
+
+                  <div
+                    v-for="model in getPaginatedModels(tab.key)"
+                    :key="`${model.manufacturer}-${model.modelType}-${model.model}`"
+                    class="model-card"
+                    @click="selectModel(model)">
+                    <div class="card-icon">
+                      <component :is="tab.icon" fill="#9810fa" />
+                    </div>
+                    <div class="card-header">
+                      <h3 :title="model.modelName">{{ model.modelName }}</h3>
+                      <a-tag :color="getManufacturerColor(model.manufacturer)">{{ model.manufacturerName }}</a-tag>
+                    </div>
+                    <div class="card-body" v-if="model.description || (model.tags && model.tags.length)">
+                      <p class="model-description" :title="model.description">{{ model.description }}</p>
+                      <div v-if="model.tags && model.tags.length" class="model-extra" style="margin-top: 8px">
+                        <div class="tags-container" style="display: flex; flex-wrap: wrap; gap: 4px">
+                          <a-tag
+                            v-for="tag in model.tags.slice(0, 3)"
+                            :key="tag"
+                            color="purple"
+                            style="margin: 0; font-size: 10px; padding: 0 4px; line-height: 18px">
+                            {{ tag }}
+                          </a-tag>
+                        </div>
+                        <div v-if="model.price !== undefined" class="price-info" style="font-size: 12px; color: #8c8c8c; margin-top: 6px">
+                          <span>价格: {{ model.price }} / 1k tokens</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <!-- 自定义卡片 -->
-                <div class="model-card custom-card" @click="selectCustomModel(tab.customType)">
-                  <div class="card-icon">
-                    <PlusOutlined />
-                  </div>
-                  <div class="card-header">
-                    <h3>自定义模型</h3>
-                  </div>
-                  <div class="card-body">
-                    <p class="model-description">{{ tab.customDesc }}</p>
-                  </div>
-                </div>
+                </template>
               </template>
+            </div>
+
+            <div class="pagination-wrapper" v-if="getFilteredModels(tab.key).length > 0">
+              <a-pagination
+                v-model:current="currentPage"
+                v-model:pageSize="pageSize"
+                :total="getFilteredModels(tab.key).length"
+                :show-size-changer="true"
+                :page-size-options="['12', '24', '48', '96']"
+                show-quick-jumper
+                @change="handlePageChange" />
             </div>
           </a-tab-pane>
         </a-tabs>
@@ -94,8 +139,14 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { message, Empty } from "ant-design-vue";
-import { SearchOutlined, FilterOutlined, PlusOutlined } from "@ant-design/icons-vue";
+import { SearchOutlined, FilterOutlined, PlusOutlined, LoadingOutlined } from "@ant-design/icons-vue";
 import addModelDialog from "./addModelDialog.vue";
+import originAxios from "axios";
+
+// 获取超级斜杠模型列表（独立实例，不走项目 baseURL，走 Vite proxy）
+function fetchRicoxueaiPricing() {
+  return originAxios.get("/ricoxueai-api/api/pricing_new").then((res) => res.data);
+}
 
 const props = defineProps({
   state: {
@@ -282,6 +333,10 @@ interface ModelCard {
   modelName: string;
   description: string;
   baseUrl: string;
+  tabType?: string;
+  price?: number;
+  tags?: string[];
+  modelRatio?: number;
 }
 
 const modelShow = defineModel<boolean>("modelShow", {
@@ -299,6 +354,67 @@ const modelForm = ref<RowData>({
   createTime: 0,
   apiKey: "",
 });
+
+const currentPage = ref(1);
+const pageSize = ref(24);
+
+const handlePageChange = () => {
+  // auto trigger compute
+};
+
+watch([activeTab, searchKeyword, selectedManufacturers], () => {
+  currentPage.value = 1;
+});
+
+const isFetchingRicoxueai = ref<boolean>(false);
+const hasFetchedRicoxueai = ref<boolean>(false); // 是否已经获取过超级斜杠的数据
+const ricoxueaiModels = ref<ModelCard[]>([]);
+
+const fetchRicoxueaiModels = async () => {
+  if (hasFetchedRicoxueai.value || isFetchingRicoxueai.value) return;
+  isFetchingRicoxueai.value = true;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const json: any = await fetchRicoxueaiPricing();
+    if (json && json.data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ricoxueaiModels.value = json.data.map((item: any) => {
+        let type = "other";
+        let modelType = "text";
+        if (item.model_type === "文本" || item.model_type === "检索") {
+          type = "text";
+          modelType = "text";
+        } else if (item.model_type === "图像") {
+          type = "image";
+          modelType = "t2i";
+        } else if (item.model_type === "音视频") {
+          type = "video";
+          modelType = "text2video";
+        }
+
+        return {
+          manufacturer: "ricoxueai",
+          manufacturerName: "超级斜杠",
+          modelType: modelType,
+          typeLabel: typeLabels[modelType] || item.model_type,
+          model: item.model_name,
+          modelName: item.model_name,
+          description: item.description || "",
+          baseUrl: manufacturerDefaultBaseUrls["ricoxueai"]?.text || "https://api.ricoxueai.cn/v1",
+          tabType: type,
+          price: item.model_price,
+          tags: item.tags ? item.tags.split(",") : [],
+          modelRatio: item.model_ratio,
+        };
+      });
+      hasFetchedRicoxueai.value = true;
+    }
+  } catch (error) {
+    console.error("获取超级斜杠模型失败", error);
+  } finally {
+    isFetchingRicoxueai.value = false;
+  }
+};
 
 interface RowData {
   id: number;
@@ -414,6 +530,10 @@ const textModels = computed<ModelCard[]>(() => {
       });
     });
   });
+
+  const apiModels = ricoxueaiModels.value.filter((m) => m.tabType === "text");
+  models.push(...apiModels);
+
   return models;
 });
 
@@ -478,6 +598,11 @@ function toggleManufacturer(manufacturer: string) {
     selectedManufacturers.value.splice(index, 1);
   } else {
     selectedManufacturers.value.push(manufacturer);
+  }
+
+  // 如果选中了超级斜杠，并且还没有拉取过数据，就去拉取
+  if (selectedManufacturers.value.includes("ricoxueai") && !hasFetchedRicoxueai.value) {
+    fetchRicoxueaiModels();
   }
 }
 
@@ -560,6 +685,10 @@ const imageModels = computed<ModelCard[]>(() => {
       });
     });
   });
+
+  const apiModels = ricoxueaiModels.value.filter((m) => m.tabType === "image");
+  models.push(...apiModels);
+
   return models;
 });
 
@@ -713,6 +842,7 @@ const videoModelPresets = {
 // 生成视频模型卡片列表
 const videoModels = computed<ModelCard[]>(() => {
   const models: ModelCard[] = [];
+
   Object.entries(videoModelPresets).forEach(([manufacturer, types]) => {
     Object.entries(types).forEach(([modelType, presets]) => {
       presets.forEach((preset) => {
@@ -729,6 +859,10 @@ const videoModels = computed<ModelCard[]>(() => {
       });
     });
   });
+
+  const apiModels = ricoxueaiModels.value.filter((m) => m.tabType === "video");
+  models.push(...apiModels);
+
   return models;
 });
 
@@ -741,6 +875,14 @@ function getFilteredModels(key: string): ModelCard[] {
   if (key === "text") return filteredTextModels.value;
   if (key === "image") return filteredImageModels.value;
   return filteredVideoModels.value;
+}
+
+// 分页后的模型
+function getPaginatedModels(key: string): ModelCard[] {
+  const filtered = getFilteredModels(key);
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return filtered.slice(start, end);
 }
 
 // 选择模型卡片
@@ -1083,6 +1225,12 @@ function sure() {
       font-size: 14px;
     }
   }
+}
+
+.pagination-wrapper {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 // 空状态样式优化

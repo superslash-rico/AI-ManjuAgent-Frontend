@@ -46,4 +46,13 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    proxy: {
+      "/ricoxueai-api": {
+        target: "https://api.ricoxueai.cn",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ricoxueai-api/, ""),
+      },
+    },
+  },
 });

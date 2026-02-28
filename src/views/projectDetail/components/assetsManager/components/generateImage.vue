@@ -347,8 +347,8 @@ async function startGenerate() {
     if (data.assetsId === formData.value.id) {
       resultImages.value.push({ filePath: data.path, state: "生成成功" });
     }
-  } catch (e) {
-    message.error("资产生成失败");
+  } catch (e: any) {
+    message.error(e?.message || "资产生成失败");
   } finally {
     generateLoading.value = false;
   }
