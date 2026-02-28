@@ -419,8 +419,9 @@ onMounted(async () => {
     localConfig.aiConfigId = undefined;
     selectManfactDis.value = false;
   } else {
-    // 如果已有 model，确保 manufacturer 和其他配置正确
-    const selectedManufacturer = manufacturerList.value.find((i) => i.manufacturer === localConfig.manufacturer);
+    const selectedManufacturer =
+      manufacturerList.value.find((i) => i.manufacturer === localConfig.manufacturer && i.model === localConfig.model) ||
+      manufacturerList.value.find((i) => i.manufacturer === localConfig.manufacturer);
 
     if (selectedManufacturer) {
       localConfig.aiConfigId = selectedManufacturer.id;

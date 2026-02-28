@@ -28,6 +28,7 @@
     "element-plus": "^2.13.0",
     "lodash": "^4.17.23",
     "mammoth": "^1.11.0",
+    "openai": "^6.25.0",
     "pinia": "^2.2.6",
     "pinia-plugin-persistedstate": "^4.7.1",
     "sass": "^1.97.0",

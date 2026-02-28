@@ -74,6 +74,7 @@ export const manufacturerLabels: Record<string, string> = {
   vidu: "Vidu",
   wan: "万象",
   gemini: "Gemini Veo",
+  ricoxueai: "超级斜杠",
   other: "其他",
 };
 
