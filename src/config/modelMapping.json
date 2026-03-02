@@ -1,0 +1,21 @@
+{
+  "globalMAPPING": {
+    "text": "doubao-seed-1-8-251228",
+    "image": {
+      "default": "doubao-seedream-5-0-260128",
+      "editImage": "doubao-seededit-3-0-i2i-250628"
+    },
+    "video": "doubao-seedance-1-5-pro-251215"
+  },
+  "agentModelMap": {
+    "storyboardAgent": "doubao-seed-1-8-251228",
+    "storyboardImage": "doubao-seedream-5-0-260128",
+    "outlineScriptAgent": "doubao-seed-1-8-251228",
+    "assetsPrompt": "doubao-seed-1-8-251228",
+    "assetsImage": "doubao-seedream-5-0-260128",
+    "generateScript": "doubao-seed-1-8-251228",
+    "videoPrompt": "doubao-seed-1-8-251228",
+    "editImage": "doubao-seededit-3-0-i2i-250628"
+  },
+  "baseUrl": "https://api.ricoxueai.cn/v1"
+}

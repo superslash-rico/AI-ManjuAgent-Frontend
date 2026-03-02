@@ -258,7 +258,7 @@ export default defineStore(
       }
     }
 
-    // 生成视频（单个配置）
+    // 生成视频（单个配置） 
     async function generateVideo(configId: number): Promise<void> {
       const config = videoConfigs.value.find((c) => c.id === configId);
 
@@ -281,17 +281,18 @@ export default defineStore(
 
       // 调用后端接口
       const { data } = await axios.post("/video/generateVideo", {
-        projectId: config.projectId,
-        scriptId: config.scriptId,
-        mode: config.mode,
-        aiConfigId: config.aiConfigId,
-        configId: configId, // 关联配置ID
-        resolution: config.resolution,
-        filePath: videoImgs,
-        duration: config.duration,
-        prompt: config.prompt,
-        audioEnabled: config.audioEnabled,
+        projectId: config.projectId,   // 项目ID
+        scriptId: config.scriptId,    // 脚本ID
+        mode: config.mode,            // 生成模式
+        aiConfigId: config.aiConfigId, // AI模型ID 在配置表中有
+        configId: configId,           // 视频配置ID（本次配置的ID）
+        resolution: config.resolution, // 分辨率
+        filePath: videoImgs,          // 图片路径数组
+        duration: config.duration,    // 时长
+        prompt: config.prompt,        // 提示词
+        audioEnabled: config.audioEnabled, // 是否开启音频
       });
+
 
       // 添加新的结果到列表（使用后端返回的真实 ID）
       if (data && data.id) {

@@ -12,10 +12,11 @@
             :script-id="config.scriptId"
             :editable="true"
             :manufacturer-disabled="true"
+            :show-model="false"
             @change="handleConfigFormChange" />
         </div>
 
-        <!-- 生成按钮 -->
+        <!-- 生成按钮 --> 
         <div class="action-section">
           <a-button type="primary" size="large" block :loading="isGenerating" @click="handleGenerate">
             <template #icon><i-video-two /></template>

@@ -1,23 +1,27 @@
 <template>
   <div class="video-config-form">
     <!-- 厂商选择 -->
-    <div class="form-row" v-if="editable">
-      <label>模型</label>
-      <a-select v-model:value="localConfig.aiConfigId" @change="onManufacturerChange" :disabled="selectManfactDis" size="small">
-        <a-select-option v-for="item in availableManufacturers" :key="item.value" :value="item.value">
-          {{ item.label }}
-        </a-select-option>
-      </a-select>
-    </div>
-    <div class="form-row" v-else>
-      <label>模型</label>
-      <span class="value">{{ localConfig.model }}</span>
-    </div>
+    <template v-if="showModel">
+      <div class="form-row" v-if="editable">
+        <label>模型</label>
+        <a-select v-model:value="localConfig.aiConfigId" @change="onManufacturerChange" :disabled="selectManfactDis"
+          size="small">
+          <a-select-option v-for="item in availableManufacturers" :key="item.value" :value="item.value">
+            {{ item.label }}
+          </a-select-option>
+        </a-select>
+      </div>
+      <div class="form-row" v-else>
+        <label>模型</label>
+        <span class="value">{{ localConfig.model }}</span>
+      </div>
+    </template>
     <!-- 模式选择 -->
     <div class="form-row" v-if="editable">
       <label>模式</label>
       <a-radio-group v-model:value="localConfig.mode" @change="onModeChange" size="small">
-        <a-radio v-for="mode in getModeOptions(localConfig.manufacturer, localConfig.model)" :key="mode.value" :value="mode.value">
+        <a-radio v-for="mode in getModeOptions(localConfig.manufacturer, localConfig.model)" :key="mode.value"
+          :value="mode.value">
           {{ mode.label }}
         </a-radio>
       </a-radio-group>
@@ -35,7 +39,8 @@
           <div class="frame-box" :class="{ 'has-image': localConfig.startFrame }" @click="openSelector('start')">
             <template v-if="localConfig.startFrame">
               <img :src="localConfig.startFrame.filePath" />
-              <a-button v-if="editable" class="remove-btn" type="text" size="small" @click.stop="localConfig.startFrame = null">
+              <a-button v-if="editable" class="remove-btn" type="text" size="small"
+                @click.stop="localConfig.startFrame = null">
                 <close-outlined />
               </a-button>
               <span class="frame-label">首帧</span>
@@ -48,7 +53,8 @@
           <div class="frame-box" :class="{ 'has-image': localConfig.endFrame }" @click="openSelector('end')">
             <template v-if="localConfig.endFrame">
               <img :src="localConfig.endFrame.filePath" />
-              <a-button v-if="editable" class="remove-btn" type="text" size="small" @click.stop="localConfig.endFrame = null">
+              <a-button v-if="editable" class="remove-btn" type="text" size="small"
+                @click.stop="localConfig.endFrame = null">
                 <close-outlined />
               </a-button>
               <span class="frame-label">尾帧</span>
@@ -67,14 +73,8 @@
       <div class="form-row">
         <label>图片</label>
         <div class="multi-images">
-          <draggable
-            v-if="localConfig.images && localConfig.images.length > 0"
-            v-model="localConfig.images"
-            item-key="id"
-            class="image-drag-list"
-            ghost-class="ghost"
-            :animation="200"
-            :disabled="!editable"
+          <draggable v-if="localConfig.images && localConfig.images.length > 0" v-model="localConfig.images"
+            item-key="id" class="image-drag-list" ghost-class="ghost" :animation="200" :disabled="!editable"
             handle=".drag-handle">
             <template #item="{ element, index: imgIndex }">
               <div class="drag-image-item">
@@ -90,8 +90,7 @@
           </draggable>
           <div
             v-if="editable && (!localConfig.images || localConfig.images.length < getMaxImages(localConfig.manufacturer, localConfig.model))"
-            class="add-image-box"
-            @click="openSelector('multi')">
+            class="add-image-box" @click="openSelector('multi')">
             <plus-outlined />
           </div>
         </div>
@@ -99,7 +98,8 @@
       <div class="form-row" v-if="editable">
         <label></label>
         <span class="tip">
-          拖拽调整顺序 | {{ localConfig.images?.length || 0 }}/{{ getMaxImages(localConfig.manufacturer, localConfig.model) }}张
+          拖拽调整顺序 | {{ localConfig.images?.length || 0 }}/{{ getMaxImages(localConfig.manufacturer, localConfig.model)
+          }}张
         </span>
       </div>
     </template>
@@ -109,10 +109,12 @@
       <div class="form-row frame-row">
         <label>图片</label>
         <div class="frame-group">
-          <div class="frame-box single-frame" :class="{ 'has-image': localConfig.startFrame }" @click="openSelector('single')">
+          <div class="frame-box single-frame" :class="{ 'has-image': localConfig.startFrame }"
+            @click="openSelector('single')">
             <template v-if="localConfig.startFrame">
               <img :src="localConfig.startFrame.filePath" />
-              <a-button v-if="editable" class="remove-btn" type="text" size="small" @click.stop="localConfig.startFrame = null">
+              <a-button v-if="editable" class="remove-btn" type="text" size="small"
+                @click.stop="localConfig.startFrame = null">
                 <close-outlined />
               </a-button>
             </template>
@@ -136,20 +138,25 @@
     <!-- 分辨率/比例 -->
     <div class="form-row" v-if="getResolutionOptions(localConfig.manufacturer, localConfig.model).length">
       <label>{{ getResolutionLabel(localConfig.manufacturer, localConfig.model) }}</label>
-      <a-select v-if="editable" v-model:value="localConfig.resolution" size="small" style="flex: 1" @change="emitChange">
-        <a-select-option v-for="res in getResolutionOptions(localConfig.manufacturer, localConfig.model)" :key="res.value" :value="res.value">
+      <a-select v-if="editable" v-model:value="localConfig.resolution" size="small" style="flex: 1"
+        @change="emitChange">
+        <a-select-option v-for="res in getResolutionOptions(localConfig.manufacturer, localConfig.model)"
+          :key="res.value" :value="res.value">
           {{ res.label }}
         </a-select-option>
       </a-select>
-      <span v-else class="value">{{ getResolutionDisplayLabel(localConfig.manufacturer, localConfig.model, localConfig.resolution) }}</span>
+      <span v-else class="value">{{ getResolutionDisplayLabel(localConfig.manufacturer, localConfig.model,
+        localConfig.resolution) }}</span>
     </div>
 
     <!-- 时长 -->
     <div class="form-row">
       <label>时长</label>
       <template v-if="getDurationOptions(localConfig.manufacturer, localConfig.model).length > 0">
-        <a-select v-if="editable" v-model:value="localConfig.duration" size="small" style="width: 100px" @change="emitChange">
-          <a-select-option v-for="dur in getDurationOptions(localConfig.manufacturer, localConfig.model)" :key="dur.value" :value="dur.value">
+        <a-select v-if="editable" v-model:value="localConfig.duration" size="small" style="width: 100px"
+          @change="emitChange">
+          <a-select-option v-for="dur in getDurationOptions(localConfig.manufacturer, localConfig.model)"
+            :key="dur.value" :value="dur.value">
             {{ dur.label }}
           </a-select-option>
         </a-select>
@@ -157,13 +164,10 @@
       </template>
       <template v-else>
         <template v-if="editable">
-          <a-input-number
-            v-model:value="localConfig.duration"
+          <a-input-number v-model:value="localConfig.duration"
             :min="getDurationRange(localConfig.manufacturer, localConfig.model).min"
             :max="getDurationRange(localConfig.manufacturer, localConfig.model).max"
-            :step="getDurationRange(localConfig.manufacturer, localConfig.model).step"
-            size="small"
-            style="width: 70px"
+            :step="getDurationRange(localConfig.manufacturer, localConfig.model).step" size="small" style="width: 70px"
             @change="emitChange" />
           <span class="unit">秒</span>
           <span class="tip">{{ getDurationTip(localConfig.manufacturer, localConfig.model) }}</span>
@@ -186,16 +190,13 @@
           润色
         </a-button>
       </div>
-      <a-textarea v-model:value="localConfig.prompt" :rows="3" placeholder="描述视频内容、运动方式等" size="small" @change="emitChange" />
+      <a-textarea v-model:value="localConfig.prompt" :rows="3" placeholder="描述视频内容、运动方式等" size="small"
+        @change="emitChange" />
     </div>
 
     <!-- 图片选择器 -->
-    <ImageSelector
-      v-model:visible="selectorVisible"
-      :script-id="scriptId"
-      :mode="selectorMode"
-      :max-images="getMaxImages(localConfig.manufacturer, localConfig.model)"
-      :initial-images="selectorInitialImages"
+    <ImageSelector v-model:visible="selectorVisible" :script-id="scriptId" :mode="selectorMode"
+      :max-images="getMaxImages(localConfig.manufacturer, localConfig.model)" :initial-images="selectorInitialImages"
       @confirm="onSelectorConfirm" />
   </div>
 </template>
@@ -233,11 +234,13 @@ const props = withDefaults(
     scriptId: number;
     editable?: boolean;
     manufacturerDisabled?: boolean;
+    showModel?: boolean;
     availableManufacturers?: { label: string; value: string }[];
   }>(),
   {
     editable: true,
     manufacturerDisabled: false,
+    showModel: true,
     availableManufacturers: () => [
       { label: "火山引擎(豆包)", value: "volcengine" },
       { label: "RunningHub(Sora)", value: "runninghub" },
@@ -441,7 +444,7 @@ onMounted(async () => {
       margin-bottom: 0;
     }
 
-    > label {
+    >label {
       width: 70px;
       flex-shrink: 0;
       font-size: 13px;
@@ -487,7 +490,7 @@ onMounted(async () => {
         width: 100%;
         margin-bottom: 8px;
 
-        > label {
+        >label {
           width: auto;
           margin-bottom: 0;
         }

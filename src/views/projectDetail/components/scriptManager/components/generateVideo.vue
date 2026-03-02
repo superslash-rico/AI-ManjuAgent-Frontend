@@ -62,7 +62,7 @@
                 </div>
               </template>
 
-              <!-- 未生成/待生成 -->
+              <!-- 未生成/待生成  -->
               <template v-else>
                 <div class="status-wrapper pending">
                   <div class="pending-icon">

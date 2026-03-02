@@ -1,14 +1,7 @@
 <template>
   <div class="newStoryboard">
-    <a-modal
-      width="80vw"
-      :style="{ top: '20px' }"
-      v-model:open="storyboardShow"
-      title="添加视频配置"
-      okText="保存配置"
-      @ok="handleOk"
-      @cancel="handleCancel"
-      :confirmLoading="generateVideoLoading">
+    <a-modal width="80vw" :style="{ top: '20px' }" v-model:open="storyboardShow" title="添加视频配置" okText="保存配置"
+      @ok="handleOk" @cancel="handleCancel" :confirmLoading="generateVideoLoading">
       <div class="configPanel">
         <div class="configHeader">
           <h3>视频生成配置</h3>
@@ -28,19 +21,19 @@
             </div>
             <div class="cardBody">
               <!-- 厂商选择 -->
-              <div class="formRow">
+              <!-- <div class="formRow">
                 <label>模型</label>
-                <a-select v-model:value="config.configId" @change="onManufacturerChange(config)" :disabled="allManufacturerDisable" size="small">
-                  <a-select-option v-for="item in availableManufacturers" :key="item.value" :value="item.value">
-                    {{ item.label }}
-                  </a-select-option>
-                </a-select>
-              </div>
+                <div class="modelDisplay">
+                  <a-tag color="blue" v-if="config.model">{{ config.model }}</a-tag>
+                  <span v-else class="unconfigured">等待配置...</span>
+                </div>
+              </div> -->
               <!-- 模式选择 -->
               <div class="formRow">
                 <label>模式</label>
                 <a-radio-group v-model:value="config.mode" @change="onModeChange(config)" size="small">
-                  <a-radio v-for="mode in getModeOptions(config.manufacturer, config.model)" :key="mode.value" :value="mode.value">
+                  <a-radio v-for="mode in getModeOptions(config.manufacturer, config.model)" :key="mode.value"
+                    :value="mode.value">
                     {{ mode.label }}
                   </a-radio>
                 </a-radio-group>
@@ -50,7 +43,8 @@
                 <div class="formRow frameRow">
                   <label>帧选择</label>
                   <div class="frameGroup">
-                    <div class="frameBox" :class="{ hasImage: config.startFrame }" @click="openImageSelector(config, 'start')">
+                    <div class="frameBox" :class="{ hasImage: config.startFrame }"
+                      @click="openImageSelector(config, 'start')">
                       <template v-if="config.startFrame">
                         <img :src="config.startFrame.filePath" />
                         <a-button class="removeBtn" type="text" size="small" @click.stop="config.startFrame = null">
@@ -63,7 +57,8 @@
                         <span>首帧</span>
                       </template>
                     </div>
-                    <div class="frameBox" :class="{ hasImage: config.endFrame }" @click="openImageSelector(config, 'end')">
+                    <div class="frameBox" :class="{ hasImage: config.endFrame }"
+                      @click="openImageSelector(config, 'end')">
                       <template v-if="config.endFrame">
                         <img :src="config.endFrame.filePath" />
                         <a-button class="removeBtn" type="text" size="small" @click.stop="config.endFrame = null">
@@ -84,29 +79,22 @@
                 <div class="formRow">
                   <label>图片</label>
                   <div class="multiImages">
-                    <draggable
-                      v-if="config.images && config.images.length > 0"
-                      v-model="config.images"
-                      item-key="id"
-                      class="imageDragList"
-                      ghost-class="ghost"
-                      :animation="200"
-                      handle=".dragHandle">
+                    <draggable v-if="config.images && config.images.length > 0" v-model="config.images" item-key="id"
+                      class="imageDragList" ghost-class="ghost" :animation="200" handle=".dragHandle">
                       <template #item="{ element, index: imgIndex }">
                         <div class="dragImageItem">
                           <div class="dragHandle">
                             <img class="image" :src="element.filePath" draggable="false" />
                             <div class="imageOrder">{{ imgIndex + 1 }}</div>
                           </div>
-                          <a-button class="removeBtn" type="text" size="small" @click="removeImageFromConfig(config, imgIndex)">
+                          <a-button class="removeBtn" type="text" size="small"
+                            @click="removeImageFromConfig(config, imgIndex)">
                             <close-outlined />
                           </a-button>
                         </div>
                       </template>
                     </draggable>
-                    <div
-                      class="addImageBox"
-                      @click="openImageSelector(config, 'multi')"
+                    <div class="addImageBox" @click="openImageSelector(config, 'multi')"
                       v-if="!config.images || config.images.length < getMaxImages(config.manufacturer, config.model)">
                       <plus-outlined />
                     </div>
@@ -115,7 +103,9 @@
                 <div class="formRow">
                   <label></label>
                   {{ getMaxImages(config.manufacturer, config.model) }}
-                  <span class="tip">拖拽调整顺序 | {{ config.images?.length || 0 }}/{{ getMaxImages(config.manufacturer, config.model) }}张</span>
+                  <span class="tip">拖拽调整顺序 | {{ config.images?.length || 0 }}/{{ getMaxImages(config.manufacturer,
+                    config.model)
+                  }}张</span>
                 </div>
               </template>
               <!-- 单图模式配置 -->
@@ -123,7 +113,8 @@
                 <div class="formRow frameRow">
                   <label>图片</label>
                   <div class="frameGroup">
-                    <div class="frameBox singleFrame" :class="{ hasImage: config.startFrame }" @click="openImageSelector(config, 'start')">
+                    <div class="frameBox singleFrame" :class="{ hasImage: config.startFrame }"
+                      @click="openImageSelector(config, 'start')">
                       <template v-if="config.startFrame">
                         <img :src="config.startFrame.filePath" />
                         <a-button class="removeBtn" type="text" size="small" @click.stop="config.startFrame = null">
@@ -142,7 +133,8 @@
               <div class="formRow">
                 <label>{{ getResolutionLabel(config.manufacturer, config.model) }}</label>
                 <a-select v-model:value="config.resolution" size="small" style="width: 140px">
-                  <a-select-option v-for="res in getResolutionOptions(config.manufacturer, config.model)" :key="res.value" :value="res.value">
+                  <a-select-option v-for="res in getResolutionOptions(config.manufacturer, config.model)"
+                    :key="res.value" :value="res.value">
                     {{ res.label }}
                   </a-select-option>
                 </a-select>
@@ -152,19 +144,17 @@
                 <label>时长</label>
                 <template v-if="getDurationOptions(config.manufacturer, config.model).length > 0">
                   <a-select v-model:value="config.duration" size="small" style="width: 100px">
-                    <a-select-option v-for="dur in getDurationOptions(config.manufacturer, config.model)" :key="dur.value" :value="dur.value">
+                    <a-select-option v-for="dur in getDurationOptions(config.manufacturer, config.model)"
+                      :key="dur.value" :value="dur.value">
                       {{ dur.label }}
                     </a-select-option>
                   </a-select>
                 </template>
                 <template v-else>
-                  <a-input-number
-                    v-model:value="config.duration"
+                  <a-input-number v-model:value="config.duration"
                     :min="getDurationRange(config.manufacturer, config.model).min"
                     :max="getDurationRange(config.manufacturer, config.model).max"
-                    :step="getDurationRange(config.manufacturer, config.model).step"
-                    size="small"
-                    style="width: 70px" />
+                    :step="getDurationRange(config.manufacturer, config.model).step" size="small" style="width: 70px" />
                   <span class="unit">秒</span>
                   <span class="tip">{{ getDurationTip(config.manufacturer, config.model) }}</span>
                 </template>
@@ -180,13 +170,8 @@
                 <label>提示词</label>
                 <div class="promptWrapper">
                   <a-textarea v-model:value="config.prompt" :rows="2" placeholder="描述视频内容、运动方式等" size="small" />
-                  <a-button
-                    class="magicBtn"
-                    type="link"
-                    size="small"
-                    :loading="config.promptLoading"
-                    @click="generateConfigPrompt(config)"
-                    style="margin-right: 20px">
+                  <a-button class="magicBtn" type="link" size="small" :loading="config.promptLoading"
+                    @click="generateConfigPrompt(config)" style="margin-right: 20px">
                     <i-magic />
                   </a-button>
                 </div>
@@ -198,20 +183,10 @@
       </div>
     </a-modal>
     <!-- 分镜图片选择弹窗 -->
-    <a-modal
-      v-model:open="imageSelectorVisible"
-      :title="imageSelectorTitle"
-      @ok="confirmImageSelection"
-      @cancel="imageSelectorVisible = false"
-      width="80%"
-      :bodyStyle="{ maxHeight: '70vh', overflow: 'auto' }">
-      <mainElement
-        v-if="imageSelectorVisible"
-        :way="imageSelectorMode === 'multi' ? 'checkbox' : 'radio'"
-        radio="storyboard"
-        ref="mainElementRef"
-        @checkChange="handleCheckedChange"
-        @check-all="handleBatchCheckAll" />
+    <a-modal v-model:open="imageSelectorVisible" :title="imageSelectorTitle" @ok="confirmImageSelection"
+      @cancel="imageSelectorVisible = false" width="80%" :bodyStyle="{ maxHeight: '70vh', overflow: 'auto' }">
+      <mainElement v-if="imageSelectorVisible" :way="imageSelectorMode === 'multi' ? 'checkbox' : 'radio'"
+        radio="storyboard" ref="mainElementRef" @checkChange="handleCheckedChange" @check-all="handleBatchCheckAll" />
       <template #footer>
         <div class="selectorFooter">
           <span class="selectedCount">已选择 {{ tempSelectedImages.length }} 张</span>
@@ -277,6 +252,25 @@ interface Storyboard {
   prompt: string;
   duration: number;
 }
+interface AiModelMapItem {
+  id: number;
+  configId: number | null;
+  name: string | null;
+  key: string | null;
+  defaultManufacturer: string | null;
+  defaultModel: string | null;
+  configModel: string | null;
+  configType: string | null;
+  configModelType: string | null;
+  configApiKey: string | null;
+  configBaseUrl: string | null;
+  configManufacturer: string | null;
+}
+interface ApiResponse {
+  code: number;
+  data: AiModelMapItem[];
+  message: string;
+}
 const props = defineProps<{ scriptId: number }>();
 const storyboardShow = defineModel<boolean>({});
 const generateVideoLoading = ref(false);
@@ -290,6 +284,8 @@ const currentEditConfig = ref<VideoConfig | null>(null);
 const tempSelectedImages = ref<ImageItem[]>([]);
 const tempSelectedIds = ref<number[]>([]);
 const manufacturerList = ref<{ model: string; manufacturer: string; id: number }[]>([]);
+const videoAiModelConfig = ref<AiModelMapItem | null>(null);
+const configLoading = ref(true);
 const manufacturerAllRecord: Record<string, string> = Object.values(manufacturerConfigs).reduce((acc: Record<string, string>, c) => {
   acc[c.value as string] = c.label;
   return acc;
@@ -298,13 +294,36 @@ const availableManufacturers = computed(() => {
   if (manufacturerList.value.length === 0) return [];
   return manufacturerList.value.map((i) => ({ label: i.model + manufacturerAllRecord[i.manufacturer], value: i.id, manufacturer: i.manufacturer }));
 });
-onMounted(async () => {
-  const res = await axios.post("/video/getManufacturer", {
-    userId: Number(localStorage.getItem("userId")),
-  });
-  manufacturerList.value = res.data;
 
-  allManufacturerDisable.value = manufacturerList.value.length === 0;
+// 获取视频模型厂商
+onMounted(async () => {
+  configLoading.value = true;
+  try {
+    const [manRes, modelMapRes] = await Promise.all([
+      axios.post("/video/getManufacturer", {
+        userId: Number(localStorage.getItem("userId")),
+      }),
+      axios.post<ApiResponse>("/setting/getAiModelMap", {}),
+    ]);
+
+    manufacturerList.value = manRes.data;
+
+    // 获取 videoModel 对应的配置项
+    // 注意：axios 拦截器已经返回了 response.data，所以这里 modelMapRes 就是 ApiResponse 结构
+    const modelList = (modelMapRes as any).data || [];
+    const videoModelItem = modelList.find((item: AiModelMapItem) => item.key === "videoModel");
+
+    if (videoModelItem && videoModelItem.configId) {
+      videoAiModelConfig.value = videoModelItem;
+      allManufacturerDisable.value = true;
+    } else {
+      allManufacturerDisable.value = manufacturerList.value.length === 0;
+    }
+  } catch (error) {
+    console.error("Failed to fetch model configuration:", error);
+  } finally {
+    configLoading.value = false;
+  }
 });
 watch(storyboardShow, (v) => {
   if (v) {
@@ -313,22 +332,37 @@ watch(storyboardShow, (v) => {
 });
 
 function addVideoConfig() {
+  if (configLoading.value) {
+    message.loading("正在加载模型配置，请稍候...");
+    return;
+  }
   const defaultManufacturer: string = availableManufacturers.value[0]?.manufacturer || "volcengine";
   const defaultModel: string = availableManufacturers.value[0]
     ? manufacturerList.value.find((i) => i.id === availableManufacturers.value[0].value)?.model || ""
     : "";
 
+  let initialManufacturer = defaultManufacturer;
+  let initialModel = defaultModel;
+  let initialConfigId = undefined;
+
+  // 优先使用动态获取的 videoAiModelConfig
+  if (videoAiModelConfig.value && videoAiModelConfig.value.configId) {
+    initialConfigId = videoAiModelConfig.value.configId;
+    initialManufacturer = videoAiModelConfig.value.configManufacturer || "ricoxueai";
+    initialModel = videoAiModelConfig.value.configModel || "doubao-seedance-1-5-pro-251215";
+  }
+
   const newConfig: VideoConfig = {
     id: ++configIdCounter,
-    configId: undefined,
-    manufacturer: "",
-    model: defaultModel,
-    mode: getDefaultMode(defaultManufacturer, defaultModel) as VideoConfig["mode"],
+    configId: initialConfigId,
+    manufacturer: initialManufacturer,
+    model: initialModel,
+    mode: getDefaultMode(initialManufacturer, initialModel) as VideoConfig["mode"],
     startFrame: null,
     endFrame: null,
     images: [],
-    resolution: getDefaultResolution(defaultManufacturer, defaultModel),
-    duration: getDefaultDuration(defaultManufacturer, defaultModel),
+    resolution: getDefaultResolution(initialManufacturer, initialModel),
+    duration: getDefaultDuration(initialManufacturer, initialModel),
     prompt: "",
     promptLoading: false,
     audioEnabled: false,
@@ -338,20 +372,20 @@ function addVideoConfig() {
 function removeVideoConfig(index: number) {
   videoConfigs.value.splice(index, 1);
 }
-function onManufacturerChange(config: VideoConfig) {
-  const selectedItem = manufacturerList.value.find((i) => i.id == config.configId);
-  config.manufacturer = selectedItem?.manufacturer!;
-  config.model = selectedItem?.model || "";
-  const manufacturerConfig = getManufacturerConfig(config.manufacturer, config.model);
-  // 重置模式
-  config.mode = manufacturerConfig.defaultMode as VideoConfig["mode"];
-  config.resolution = manufacturerConfig.defaultResolution;
-  config.duration = getDefaultDuration(config.manufacturer, config.model);
-  // 清空图片选择
-  config.startFrame = null;
-  config.endFrame = null;
-  config.images = [];
-}
+// function onManufacturerChange(config: VideoConfig) {
+//   const selectedItem = manufacturerList.value.find((i) => i.id == config.configId);
+//   config.manufacturer = selectedItem?.manufacturer!;
+//   config.model = selectedItem?.model || "";
+//   const manufacturerConfig = getManufacturerConfig(config.manufacturer, config.model);
+//   // 重置模式
+//   config.mode = manufacturerConfig.defaultMode as VideoConfig["mode"];
+//   config.resolution = manufacturerConfig.defaultResolution;
+//   config.duration = getDefaultDuration(config.manufacturer, config.model);
+//   // 清空图片选择
+//   config.startFrame = null;
+//   config.endFrame = null;
+//   config.images = [];
+// }
 function onModeChange(config: VideoConfig) {
   config.startFrame = null;
   config.endFrame = null;
@@ -553,11 +587,13 @@ function handleCancel() {
   border-radius: 8px;
   max-height: 70vh;
   overflow-y: auto;
+
   .configHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+
     h3 {
       margin: 0;
       font-size: 16px;
@@ -565,20 +601,24 @@ function handleCancel() {
     }
   }
 }
+
 .configList {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
+
 .configCard {
   background: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
   overflow: hidden;
   transition: box-shadow 0.2s;
+
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
+
   .cardHeader {
     display: flex;
     justify-content: space-between;
@@ -586,59 +626,82 @@ function handleCancel() {
     padding: 8px 12px;
     background: #f5f5f5;
     border-bottom: 1px solid #e8e8e8;
+
     .cardTitle {
       font-weight: 500;
       font-size: 14px;
     }
   }
+
   .cardBody {
     padding: 12px;
   }
 }
+
 .formRow {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+
   &:last-child {
     margin-bottom: 0;
   }
-  > label {
+
+  >label {
     width: 60px;
     flex-shrink: 0;
     font-size: 12px;
     color: #666;
     line-height: 24px;
   }
+
   > :deep(.ant-select),
   > :deep(.ant-radio-group) {
     flex: 1;
   }
+
   .unit {
     margin-left: 4px;
     font-size: 12px;
     color: #666;
   }
+
   .tip {
     margin-left: 8px;
     font-size: 11px;
     color: #999;
   }
+
+  .modelDisplay {
+    display: flex;
+    align-items: center;
+
+    .unconfigured {
+      font-size: 11px;
+      color: #faad14;
+    }
+  }
+
   &.frameRow {
     align-items: flex-start;
+
     .frameGroup {
       display: flex;
       gap: 8px;
     }
   }
+
   &.promptRow {
     flex-direction: column;
     align-items: flex-start;
-    > label {
+
+    >label {
       width: auto;
       margin-bottom: 4px;
     }
   }
 }
+
 .frameBox {
   width: 150px;
   height: auto;
@@ -656,22 +719,27 @@ function handleCancel() {
   background: #fafafa;
   font-size: 10px;
   color: #999;
+
   &.singleFrame {
     width: 90px;
     height: 68px;
   }
+
   &:hover {
     border-color: #1890ff;
     background: #e6f7ff;
   }
+
   &.hasImage {
     border-style: solid;
     border-color: #52c41a;
+
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
     .frameLabel {
       position: absolute;
       bottom: 0;
@@ -683,6 +751,7 @@ function handleCancel() {
       text-align: center;
       padding: 1px 0;
     }
+
     .removeBtn {
       position: absolute;
       top: 0;
@@ -699,10 +768,12 @@ function handleCancel() {
       transition: opacity 0.2s;
       font-size: 10px;
     }
+
     &:hover .removeBtn {
       opacity: 1;
     }
   }
+
   span {
     margin-top: 2px;
   }

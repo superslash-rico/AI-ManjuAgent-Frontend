@@ -5,14 +5,39 @@
       <div class="jb c" style="margin-top: 10px">
         <h1 style="font-size: 18px; display: block">AI 模型配置</h1>
       </div>
+
+      <!-- 全局配置表单 (精简版) -->
+      <div class="global-config-section">
+        <div class="compact-config-bar">
+          <div class="config-title">配置超级斜杠API</div>
+          <div class="config-inputs">
+            <div class="input-item">
+              <span class="label">API Key</span>
+              <a-input-password v-model:value="globalApiKey" placeholder="输入 API Key" size="middle"
+                class="compact-input" />
+            </div>
+            <div class="input-item">
+              <span class="label">Base URL</span>
+              <a-input v-model:value="globalBaseUrl" disabled size="middle" class="compact-input" />
+            </div>
+            <a-button type="primary" size="middle" :loading="isBatchConfiguring" @click="autoConfigureAll"
+              class="compact-btn">
+              配置
+            </a-button>
+          </div>
+        </div>
+      </div>
+
       <div class="model-grid">
         <div v-for="(item, index) in modelData" :key="index" class="model-card-item">
-          <a-card hoverable class="model-config-card" @click="startConfig(item)">
+          <!-- 禁用单独配置点击，只能通过顶部一键配置 -->
+          <a-card class="model-config-card disabled-card">
             <template #title>
               <div class="card-title-wrapper">
                 <div class="card-icon">
                   <i-brain theme="outline" size="20" fill="currentColor" v-if="item.key.includes('Agent')" />
-                  <i-text theme="outline" size="20" fill="currentColor" v-else-if="item.key.includes('Script') || item.key.includes('Prompt')" />
+                  <i-text theme="outline" size="20" fill="currentColor"
+                    v-else-if="item.key.includes('Script') || item.key.includes('Prompt')" />
                   <i-picture theme="outline" size="20" fill="currentColor" v-else />
                 </div>
                 <span class="card-title-text">{{ item.name }}</span>
@@ -21,8 +46,8 @@
             <div class="card-content">
               <div class="model-info">
                 <div class="model-label">当前模型:</div>
-                <div class="model-value" v-if="item.model">
-                  <a-tag color="blue">{{ item.model }}</a-tag>
+                <div class="model-value" v-if="item.configModel">
+                  <a-tag color="blue">{{ item.configModel }}</a-tag>
                 </div>
                 <div class="model-value unconfigured" v-else>
                   <i-attention theme="outline" size="14" fill="#faad14" />
@@ -35,20 +60,50 @@
       </div>
     </div>
 
-    <!-- 视频模型列表 -->
     <div class="video-model-section">
       <div class="section-header">
         <h1 class="section-title">
           <i-video theme="outline" size="20" fill="currentColor" />
-          视频模型列表
+          视频模型配置
         </h1>
-        <a-button type="primary" @click="addVideoModel" class="add-video-btn">
-          <i-plus theme="outline" size="16" fill="currentColor" />
-          添加视频模型
-        </a-button>
       </div>
 
-      <div class="video-model-list" v-if="videoModels.length > 0">
+      <div class="video-model-card-single" v-if="videoModels.length === 1">
+        <a-card class="fixed-video-card">
+          <div class="video-card-body-horizontal">
+            <div class="video-icon-large">
+              <i-video theme="filled" size="32" fill="#9913FA" />
+            </div>
+            <div class="video-info-main">
+              <div class="video-model-row">
+                <span class="video-model-name-large">{{ videoModels[0].model }}</span>
+                <a-tag :color="getManufacturerTagColor(videoModels[0].manufacturer)" class="manufacturer-tag-large">
+                  {{ getManufacturerName(videoModels[0].manufacturer) }}
+                </a-tag>
+              </div>
+              <div class="video-detail-row">
+                <div class="detail-item">
+                  <span class="detail-label">Base URL:</span>
+                  <span class="detail-value">{{ videoModels[0].baseUrl || "默认" }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">创建时间:</span>
+                  <span class="detail-value">{{ formatTime(videoModels[0].createTime) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="video-card-actions">
+              <a-button type="link" @click="editVideoModel(videoModels[0])">修改配置</a-button>
+              <a-popconfirm title="确定要删除此视频模型吗？" ok-text="确定" cancel-text="取消"
+                @confirm="deleteVideoModel(videoModels[0].id)">
+                <a-button type="link" danger>删除模型</a-button>
+              </a-popconfirm>
+            </div>
+          </div>
+        </a-card>
+      </div>
+
+      <div class="video-model-list" v-else-if="videoModels.length > 1">
         <div v-for="(video, index) in videoModels" :key="video.id" class="video-model-card">
           <a-card hoverable @click="editVideoModel(video)" class="clickable-card">
             <template #title>
@@ -62,7 +117,8 @@
                     {{ getManufacturerName(video.manufacturer) }}
                   </a-tag>
                 </div>
-                <a-popconfirm title="确定要删除此视频模型吗？" ok-text="确定" cancel-text="取消" @confirm="deleteVideoModel(video.id)" @click.stop>
+                <a-popconfirm title="确定要删除此视频模型吗？" ok-text="确定" cancel-text="取消" @confirm="deleteVideoModel(video.id)"
+                  @click.stop>
                   <a-button danger size="small" class="delete-btn-corner" @click.stop>
                     <i-delete theme="outline" size="14" fill="currentColor" />
                   </a-button>
@@ -82,7 +138,7 @@
           </a-card>
         </div>
       </div>
-      <a-empty v-else description="暂无视频模型，点击上方按钮添加" class="empty-state">
+      <a-empty v-else description="暂无视频模型配置，请使用上方“超级斜杠配置”一键设置" class="empty-state">
         <template #image>
           <i-video theme="outline" size="64" fill="#d9d9d9" />
         </template>
@@ -125,9 +181,12 @@
       </div>
     </div>
     <PromptEditor v-model="promptEditorShow" />
-    <newModelData v-model:modelDataShow="modelDataShow" :currentType="currentType" v-model:configingModel="configingModel" @modelList="modelList" />
-    <ModeListDialog :typeList="['video']" v-model:modelShow="videoModelDialogShow" state="选择视频模型" @fetchModelList="onVideoModelDialogClose" />
-    <addModelDialog v-model="editDialogVisible" v-if="editDialogVisible" v-model:modelForm="editForm" @fetchModelList="loadVideoModels" />
+    <newModelData v-model:modelDataShow="modelDataShow" :currentType="currentType"
+      v-model:configingModel="configingModel" @modelList="modelList" />
+    <ModeListDialog :typeList="['video']" v-model:modelShow="videoModelDialogShow" state="选择视频模型"
+      @fetchModelList="onVideoModelDialogClose" />
+    <addModelDialog v-model="editDialogVisible" v-if="editDialogVisible" v-model:modelForm="editForm"
+      @fetchModelList="loadVideoModels" />
   </div>
 </template>
 
@@ -138,6 +197,7 @@ import PromptEditor from "./components/promptEditor.vue";
 import newModelData from "./components/modelData.vue";
 import ModeListDialog from "./components/modeListDialog.vue";
 import addModelDialog from "./components/addModelDialog.vue";
+import modelConfig from "@/config/modelMapping.json";
 
 import dayjs from "dayjs";
 
@@ -145,6 +205,7 @@ const promptEditorShow = ref(false);
 interface ModelType {
   id: number;
   model: string;
+  configModel: string;
   name: string;
   key: string;
 }
@@ -164,6 +225,87 @@ const modelData = ref<ModelType[]>([]);
 const videoModels = ref<VideoModelType[]>([]);
 const currentType = ref("");
 const videoModelDialogShow = ref(false);
+
+// 全局配置相关
+const globalApiKey = ref("");
+const globalBaseUrl = ref(modelConfig.baseUrl);
+const isBatchConfiguring = ref(false);
+
+const GLOBAL_MODEL_MAPPING = modelConfig.globalMAPPING;
+
+async function autoConfigureAll() {
+  if (!globalApiKey.value) {
+    return message.warning("请先输入 API Key");
+  }
+
+  isBatchConfiguring.value = true;
+  try {
+    // 1. 创建所需的 4 个模型
+    const modelSpecs = [
+      { type: "text", model: GLOBAL_MODEL_MAPPING.text },
+      { type: "image", model: GLOBAL_MODEL_MAPPING.image.default },
+      { type: "image", model: GLOBAL_MODEL_MAPPING.image.editImage },
+      { type: "video", model: GLOBAL_MODEL_MAPPING.video },
+    ];
+
+    const modelIdMap: Record<string, number> = {};
+
+    for (const spec of modelSpecs) {
+      const res = await axios.post("/setting/addModel", {
+        type: spec.type,
+        modelType: spec.type === "video" ? "text" : "", // 视频模型在系统中通常需要一个 modelType，这里暂设为 text 或按需调整
+        model: spec.model,
+        baseUrl: globalBaseUrl.value,
+        manufacturer: "ricoxueai",
+        apiKey: globalApiKey.value,
+      });
+      // 假设后端返回的对象中有 id，或者我们需要重新查询列表来获取刚创建的 ID
+      // 实际开发中如果 addModel 不返回 ID，可能需要查询
+      // 这里根据 addModelDialog.vue 推测 addModel 是成功的，为了保险，我们批量添加后刷新列表
+    }
+
+    // 2. 刷新所有模型列表以获取最新的 ID
+    const allModelsRes = await axios.post("/setting/getSetting");
+    const allModels = allModelsRes.data;
+
+    // 3. 建立 模型名称 -> ID 的映射
+    allModels.forEach((m: any) => {
+      if (m.manufacturer === "ricoxueai" && m.apiKey === globalApiKey.value) {
+        modelIdMap[m.model] = m.id;
+      }
+    });
+
+    // 4. 为每个 Agent 模块绑定模型
+    for (const agent of modelData.value) {
+      let targetModelName = "";
+      if (agent.key === "editImage") {
+        targetModelName = GLOBAL_MODEL_MAPPING.image.editImage;
+      } else if (["storyboardImage", "assetsImage"].includes(agent.key)) {
+        targetModelName = GLOBAL_MODEL_MAPPING.image.default;
+      } else {
+        targetModelName = GLOBAL_MODEL_MAPPING.text;
+      }
+
+      const configId = modelIdMap[targetModelName];
+      if (configId) {
+        await axios.post("/setting/configurationModel", {
+          id: agent.id,
+          configId: configId,
+        });
+      }
+    }
+
+    message.success("全局模型配置并激活成功！");
+    globalApiKey.value = "";
+    modelList();
+    loadVideoModels();
+  } catch (error) {
+    console.error(error);
+    message.error("配置过程中出现错误，请重试");
+  } finally {
+    isBatchConfiguring.value = false;
+  }
+}
 const editingVideoModel = ref<VideoModelType | null>({
   id: 0,
   model: "",
@@ -309,15 +451,15 @@ function showDoubleConfirm2(step = 1): Promise<boolean> {
     const config =
       step === 1
         ? {
-            title: "危险操作！确认要删除所有数据表吗？",
-            content: "此操作会删除所有数据表，且不可恢复。请谨慎操作！",
-            okText: "继续操作",
-          }
+          title: "危险操作！确认要删除所有数据表吗？",
+          content: "此操作会删除所有数据表，且不可恢复。请谨慎操作！",
+          okText: "继续操作",
+        }
         : {
-            title: "请再次确认",
-            content: "真的要删除所有数据表吗？数据将无法恢复！",
-            okText: "确认删除",
-          };
+          title: "请再次确认",
+          content: "真的要删除所有数据表吗？数据将无法恢复！",
+          okText: "确认删除",
+        };
 
     Modal.confirm({
       ...config,
@@ -352,15 +494,15 @@ function showDoubleConfirm(step = 1): Promise<boolean> {
     const config =
       step === 1
         ? {
-            title: "危险操作！确认要清空所有数据表吗？",
-            content: "此操作会删除所有数据表的数据，且不可恢复。请谨慎操作！",
-            okText: "继续操作",
-          }
+          title: "危险操作！确认要清空所有数据表吗？",
+          content: "此操作会删除所有数据表的数据，且不可恢复。请谨慎操作！",
+          okText: "继续操作",
+        }
         : {
-            title: "请再次确认",
-            content: "真的要清空所有数据表吗？数据将无法恢复！",
-            okText: "确认删除",
-          };
+          title: "请再次确认",
+          content: "真的要清空所有数据表吗？数据将无法恢复！",
+          okText: "确认删除",
+        };
 
     Modal.confirm({
       ...config,
@@ -402,10 +544,76 @@ async function deleteAllData() {
   flex-direction: column;
   overflow-y: auto;
 
-  > span {
+  >span {
     font-size: 30px;
     font-weight: bold;
     margin-bottom: 20px;
+  }
+
+  .global-config-section {
+    margin: 10px 0 20px;
+    padding: 16px 20px;
+    background: transparent;
+    border: 1px dashed #d9d9d9;
+    border-radius: 12px;
+
+    .compact-config-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+
+      .config-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #374151;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::before {
+          content: "";
+          display: inline-block;
+          width: 4px;
+          height: 16px;
+          background: var(--mainColor);
+          border-radius: 2px;
+        }
+      }
+
+      .config-inputs {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+        justify-content: flex-start;
+
+        .input-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .label {
+            font-size: 13px;
+            color: #6b7280;
+            white-space: nowrap;
+          }
+
+          .compact-input {
+            width: 240px;
+            border-radius: 6px;
+          }
+        }
+
+        .compact-btn {
+          min-width: 80px;
+          border-radius: 6px;
+          font-weight: 600;
+        }
+      }
+    }
   }
 
   .addModel {
@@ -427,7 +635,19 @@ async function deleteAllData() {
           transition: all 0.3s ease;
           border: 1px solid #f0f0f0;
 
-          &:hover {
+          &.disabled-card {
+            cursor: not-allowed;
+            opacity: 0.85;
+            filter: grayscale(0.2);
+
+            &:hover {
+              border-color: #f0f0f0;
+              box-shadow: none;
+              transform: none;
+            }
+          }
+
+          &:hover:not(.disabled-card) {
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(153, 19, 250, 0.15);
             border-color: var(--mainColor);
@@ -446,7 +666,7 @@ async function deleteAllData() {
             border-top: 1px solid #f0f0f0;
             background: #fafafa;
 
-            > li {
+            >li {
               margin: 8px 0;
             }
           }
@@ -553,6 +773,7 @@ async function deleteAllData() {
       gap: 20px;
 
       .video-model-card {
+
         .clickable-card {
           cursor: pointer;
         }
@@ -663,26 +884,32 @@ async function deleteAllData() {
   .other {
     margin-top: 16px;
     -webkit-overflow-scrolling: touch;
+
     .otherConfiguration {
       font-size: 18px;
       margin-top: 10px;
       display: block;
     }
+
     .prompt {
       margin-top: 20px;
+
       .promptText {
         font-size: 18px;
         margin-top: 10px;
         display: block;
       }
     }
+
     .sql {
       margin-top: 20px;
+
       .sqlText {
         font-size: 18px;
         margin-top: 10px;
         display: block;
       }
+
       .dangerBadge {
         font-size: 12px;
         color: #ef4444;

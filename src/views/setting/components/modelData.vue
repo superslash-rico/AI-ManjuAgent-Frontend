@@ -11,13 +11,14 @@
       <div class="data-container">
         <div class="toolbar">
           <div class="toolbar-left">
+            <!-- 这里原来为新增模型字样 -->
             <a-button type="primary" size="large" @click="addModelBtn" class="add-btn">
               <template #icon>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                   <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
               </template>
-              新增模型
+              配置模型
             </a-button>
           </div>
           <div class="toolbar-center">
@@ -37,7 +38,8 @@
           </div>
         </div>
 
-        <div class="table-wrapper">
+        <!-- 原有列表展示逻辑已隐藏 -->
+        <!-- <div class="table-wrapper">
           <vxe-table
             ref="tableRef"
             :data="filteredTableData"
@@ -47,112 +49,66 @@
             border="inner"
             round
             class="custom-table">
-            <vxe-column type="radio" title="选中" width="60" align="center"></vxe-column>
-            <vxe-column field="manufacturer" title="厂商" width="120" align="center">
-              <template #default="{ row }">
-                <a-tag color="blue" class="manufacturer-tag">{{ row.manufacturer }}</a-tag>
-              </template>
-            </vxe-column>
-            <vxe-column field="modelType" title="类型" width="120" align="center">
-              <template #default="{ row }">
-                <a-tag v-if="row.type == 'text'" color="green" class="type-tag">
-                  <template #icon>📝</template>
-                  文本模型
-                </a-tag>
-                <a-tag v-if="row.type == 'image'" color="orange" class="type-tag">
-                  <template #icon>🖼️</template>
-                  图像模型
-                </a-tag>
-                <a-tag v-if="row.type == 'video'" color="purple" class="type-tag">
-                  <template #icon>🎬</template>
-                  视频模型
-                </a-tag>
-              </template>
-            </vxe-column>
-            <vxe-column field="model" title="模型名称" width="280">
-              <template #default="{ row }">
-                <div class="model-name">
-                  <span class="model-text">{{ row.model }}</span>
-                </div>
-              </template>
-            </vxe-column>
-            <vxe-column field="baseUrl" title="Base URL" min-width="200">
-              <template #default="{ row }">
-                <div class="base-url">
-                  <span class="url-text">{{ row.baseUrl || "默认" }}</span>
-                </div>
-              </template>
-            </vxe-column>
-            <vxe-column field="apiKey" title="API Key" width="180">
-              <template #default="{ row }">
-                <div class="api-key-cell">
-                  <div class="api-key-text">
-                    {{ visibleMap[row.id] ? row.apiKey : "••••••••" }}
-                  </div>
-                  <a-button type="text" size="small" class="toggle-btn" @click="setVisible(row.id, !visibleMap[row.id])">
-                    <i-preview-open v-if="!visibleMap[row.id]" theme="outline" size="18" fill="#8c8c8c" />
-                    <i-preview-close v-else theme="outline" size="18" fill="#1890ff" />
-                  </a-button>
-                </div>
-              </template>
-            </vxe-column>
-            <vxe-column field="createTime" title="创建时间" width="180" align="center">
-              <template #default="{ row }">
-                <div class="create-time">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right: 6px">
-                    <path
-                      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z" />
-                  </svg>
-                  {{ dayjs(row.createTime).format("YYYY-MM-DD HH:mm") }}
-                </div>
-              </template>
-            </vxe-column>
-            <vxe-column title="操作" align="center" width="240" fixed="right">
-              <template #default="{ row }">
-                <div class="action-buttons">
-                  <a-tooltip title="测试连接">
-                    <a-button type="primary" size="small" :loading="row.load" @click="testAi(row)" class="action-btn test-btn">
-                      <template #icon v-if="!row.load">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                          <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                        </svg>
-                      </template>
-                      测试
-                    </a-button>
-                  </a-tooltip>
-                  <a-tooltip title="编辑模型">
-                    <a-button size="small" @click="editModelBtn(row)" class="action-btn edit-btn">
-                      <template #icon>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                          <path
-                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                        </svg>
-                      </template>
-                      编辑
-                    </a-button>
-                  </a-tooltip>
-                  <a-popconfirm
-                    title="确定要删除此模型吗？"
-                    style="z-index: 99999999999999999999"
-                    ok-text="确定"
-                    cancel-text="取消"
-                    @confirm="delModelBtn(row)">
-                    <a-tooltip title="删除模型">
-                      <a-button danger size="small" class="action-btn delete-btn">
-                        <template #icon>
-                          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-                          </svg>
-                        </template>
-                        删除
-                      </a-button>
-                    </a-tooltip>
-                  </a-popconfirm>
-                </div>
-              </template>
-            </vxe-column>
+            ... 
           </vxe-table>
+        </div> -->
+
+        <!-- 新的卡片展示逻辑 -->
+        <div class="card-grid-wrapper">
+          <div v-for="row in filteredTableData" :key="row.id" 
+               class="model-item-card" 
+               :class="{ 'is-selected': selectedCardId === row.id }"
+               @click="selectCard(row)">
+            <div class="card-selection-indicator" v-if="row.type === props.currentType">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+            </div>
+            
+            <div class="card-main-info">
+              <div class="card-top">
+                <a-tag color="blue" class="manufacturer-badge">{{ row.manufacturer }}</a-tag>
+                <div class="model-type-icon">
+                  <span v-if="row.type == 'text'">📝</span>
+                  <span v-if="row.type == 'image'">🖼️</span>
+                  <span v-if="row.type == 'video'">🎬</span>
+                </div>
+              </div>
+              
+              <h3 class="card-model-name">{{ row.model }}</h3>
+              
+              <div class="card-detail">
+                <div class="detail-row">
+                  <span class="detail-label">Base URL:</span>
+                  <span class="detail-value text-truncate">{{ row.baseUrl || "默认" }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">API Key:</span>
+                  <div class="api-key-container">
+                    <span class="detail-value">{{ visibleMap[row.id] ? row.apiKey : "••••••••" }}</span>
+                    <a-button type="text" size="small" class="view-btn" @click.stop="setVisible(row.id, !visibleMap[row.id])">
+                      <i-preview-open v-if="!visibleMap[row.id]" theme="outline" size="14" fill="#8c8c8c" />
+                      <i-preview-close v-else theme="outline" size="14" fill="#1890ff" />
+                    </a-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer" @click.stop>
+              <a-space size="small">
+                <a-button type="primary" ghost size="small" :loading="row.load" @click="testAi(row)" class="card-action-btn">测试</a-button>
+                <a-button size="small" @click="editModelBtn(row)" class="card-action-btn">编辑</a-button>
+                <a-popconfirm title="确定要删除此模型吗？" ok-text="确定" cancel-text="取消" @confirm="delModelBtn(row)">
+                  <a-button danger size="small" class="card-action-btn">删除</a-button>
+                </a-popconfirm>
+              </a-space>
+            </div>
+          </div>
+          
+          <div v-if="filteredTableData.length === 0" class="empty-placeholder">
+            <a-empty description="暂无符合搜索条件的模型" />
+          </div>
         </div>
 
         <div class="footer-actions">
@@ -185,6 +141,7 @@
       :isCustomModel="false"
       :defaultPlaceHolder="defaultPlaceHolder"
       :manufacturerNames="manufacturerNames"
+      :agentKey="configingModel?.key"
       @fetchModelList="fetchModelList" />
 
     <!-- 图像测试结果预览弹窗 -->
@@ -252,6 +209,7 @@ interface ModelType {
   id: number;
   model: string;
   name: string;
+  key: string;
 }
 const configingModel = defineModel<ModelType>("configingModel");
 interface RowData {
@@ -271,6 +229,15 @@ const state = ref("");
 const modelShow = ref(false);
 const tableData = ref<RowData[]>([]);
 const searchKeyword = ref("");
+const selectedCardId = ref<number | null>(null);
+
+function selectCard(row: RowData) {
+  if (row.type !== props.currentType) {
+    message.warning(`此模型类型为 [${row.type}]，无法用于当前 [${props.currentType}] 模块`);
+    return;
+  }
+  selectedCardId.value = row.id;
+}
 
 // 根据搜索关键词过滤表格数据
 const filteredTableData = computed(() => {
@@ -295,21 +262,21 @@ const modelForm = ref<RowData>({
   createTime: 0,
   load: false,
 });
-//新增模型
+// 配置模型 (原来为新增模型，现改为直接跳转到超级斜杠配置)
 function addModelBtn() {
-  state.value = "新增模型";
-  modelForm.value = {
+  state.value = "配置模型";
+  editModelForm.value = {
     id: 0,
     name: "",
-    type: "",
+    type: props.currentType || "text",
     modelType: "",
     model: "",
     apiKey: "",
-    baseUrl: "",
-    manufacturer: "",
+    baseUrl: manufacturerDefaultBaseUrls["ricoxueai"]?.[props.currentType] || "https://api.ricoxueai.cn/v1",
+    manufacturer: "ricoxueai",
     createTime: 0,
   };
-  modelShow.value = true;
+  editDialogVisible.value = true;
 }
 // 单选框校验方法，只允许选择与 currentType 相同的 type
 function checkRadioMethod({ row }: { row: RowData }) {
@@ -530,15 +497,15 @@ function delModelBtn(row: RowData) {
 const emit = defineEmits(["modelList"]);
 // 确认配置
 async function confirmConfig() {
-  const selectedRow = tableRef.value?.getRadioRecord();
-  if (!selectedRow) {
-    message.warning("请先选择一个模型");
+  const selectedId = selectedCardId.value;
+  if (!selectedId) {
+    message.warning("请先选择一个模型卡片");
     return;
   }
   try {
     await axios.post("/setting/configurationModel", {
       id: configingModel.value?.id,
-      configId: selectedRow.id,
+      configId: selectedId,
     });
 
     message.success("配置成功");
@@ -698,140 +665,141 @@ async function confirmConfig() {
   }
 }
 
-.table-wrapper {
-  margin-bottom: 20px;
-  border-radius: 8px;
-  overflow: hidden;
+.card-grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 4px;
 
-  :deep(.custom-table) {
-    font-size: 14px;
-
-    .vxe-header--row {
-      background: linear-gradient(to bottom, #fafafa, #f5f5f5);
-      font-weight: 600;
-      color: #262626;
-    }
-
-    .vxe-body--row {
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: #f0f7ff !important;
-      }
-    }
-
-    .vxe-cell {
-      padding: 12px 8px;
-    }
-  }
-
-  .manufacturer-tag {
-    font-weight: 500;
-    border-radius: 6px;
-    padding: 4px 12px;
-    border: none;
-  }
-
-  .type-tag {
-    font-weight: 500;
-    border-radius: 6px;
-    padding: 4px 12px;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .model-name {
-    .model-text {
-      font-weight: 500;
-      color: #262626;
-      font-family: "Consolas", "Monaco", monospace;
-    }
-  }
-
-  .base-url {
-    .url-text {
-      color: #595959;
-      font-size: 13px;
-      font-family: "Consolas", "Monaco", monospace;
-    }
-  }
-
-  .api-key-cell {
+  .model-item-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 2px solid #f0f0f0;
+    padding: 16px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
 
-    .api-key-text {
-      flex: 1;
-      font-family: "Consolas", "Monaco", monospace;
-      color: #595959;
-      font-size: 13px;
+    &:hover {
+      border-color: #d6e4ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .toggle-btn {
-      padding: 4px;
-      height: auto;
-      transition: all 0.2s ease;
+    &.is-selected {
+      border-color: #1890ff;
+      background: #f0f7ff;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
 
-      &:hover {
-        background: #f0f0f0;
-        border-radius: 4px;
-      }
-    }
-  }
-
-  .create-time {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #8c8c8c;
-    font-size: 13px;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-
-    .action-btn {
-      border-radius: 6px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-
-      &:hover {
-        transform: translateY(-1px);
-      }
-
-      &.test-btn {
-        box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
-
-        &:hover {
-          box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
-        }
-      }
-
-      &.edit-btn {
+      .card-selection-indicator {
         color: #1890ff;
-        border-color: #1890ff;
+        opacity: 1;
+      }
+    }
 
-        &:hover {
-          background: #e6f7ff;
-        }
+    .card-selection-indicator {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      color: #bfbfbf;
+      opacity: 0.3;
+      transition: all 0.3s ease;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+
+      .manufacturer-badge {
+        margin: 0;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 11px;
       }
 
-      &.delete-btn {
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 6px rgba(255, 77, 79, 0.3);
+      .model-type-icon {
+        font-size: 18px;
+      }
+    }
+
+    .card-model-name {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #262626;
+      line-height: 1.4;
+      font-family: "Consolas", "Monaco", monospace;
+      word-break: break-all;
+    }
+
+    .card-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .detail-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .detail-label {
+          font-size: 11px;
+          color: #8c8c8c;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+          font-size: 13px;
+          color: #595959;
+          font-family: "Consolas", "Monaco", monospace;
+
+          &.text-truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .api-key-container {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .view-btn {
+            padding: 0;
+            height: auto;
+            line-height: 1;
+          }
         }
       }
     }
+
+    .card-footer {
+      border-top: 1px solid #f0f0f0;
+      padding-top: 12px;
+      display: flex;
+      justify-content: center;
+
+      .card-action-btn {
+        border-radius: 6px;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .empty-placeholder {
+    grid-column: 1 / -1;
+    padding: 60px 0;
   }
 }
 
