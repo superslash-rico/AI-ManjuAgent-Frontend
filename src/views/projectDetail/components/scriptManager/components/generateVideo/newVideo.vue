@@ -252,24 +252,15 @@ interface Storyboard {
   prompt: string;
   duration: number;
 }
-interface AiModelMapItem {
+interface VideoModelItem {
   id: number;
-  configId: number | null;
-  name: string | null;
-  key: string | null;
-  defaultManufacturer: string | null;
-  defaultModel: string | null;
-  configModel: string | null;
-  configType: string | null;
-  configModelType: string | null;
-  configApiKey: string | null;
-  configBaseUrl: string | null;
-  configManufacturer: string | null;
-}
-interface ApiResponse {
-  code: number;
-  data: AiModelMapItem[];
-  message: string;
+  model: string;
+  manufacturer: string;
+  type?: string;
+  modelType?: string;
+  baseUrl?: string;
+  createTime?: number;
+  userId?: number;
 }
 const props = defineProps<{ scriptId: number }>();
 const storyboardShow = defineModel<boolean>({});
@@ -283,44 +274,31 @@ const imageSelectorMode = ref<"start" | "end" | "multi">("start");
 const currentEditConfig = ref<VideoConfig | null>(null);
 const tempSelectedImages = ref<ImageItem[]>([]);
 const tempSelectedIds = ref<number[]>([]);
-const manufacturerList = ref<{ model: string; manufacturer: string; id: number }[]>([]);
-const videoAiModelConfig = ref<AiModelMapItem | null>(null);
+// 从 getVideoModelList 获取的视频模型列表，仅支持单模型
+const videoModelList = ref<VideoModelItem[]>([]);
 const configLoading = ref(true);
 const manufacturerAllRecord: Record<string, string> = Object.values(manufacturerConfigs).reduce((acc: Record<string, string>, c) => {
   acc[c.value as string] = c.label;
   return acc;
 }, {});
 const availableManufacturers = computed(() => {
-  if (manufacturerList.value.length === 0) return [];
-  return manufacturerList.value.map((i) => ({ label: i.model + manufacturerAllRecord[i.manufacturer], value: i.id, manufacturer: i.manufacturer }));
+  if (videoModelList.value.length === 0) return [];
+  return videoModelList.value.map((i) => ({
+    label: i.model + (manufacturerAllRecord[i.manufacturer] || ""),
+    value: i.id,
+    manufacturer: i.manufacturer,
+  }));
 });
 
-// 获取视频模型厂商
 onMounted(async () => {
   configLoading.value = true;
   try {
-    const [manRes, modelMapRes] = await Promise.all([
-      axios.post("/video/getManufacturer", {
-        userId: Number(localStorage.getItem("userId")),
-      }),
-      axios.post<ApiResponse>("/setting/getAiModelMap", {}),
-    ]);
-
-    manufacturerList.value = manRes.data;
-
-    // 获取 videoModel 对应的配置项
-    // 注意：axios 拦截器已经返回了 response.data，所以这里 modelMapRes 就是 ApiResponse 结构
-    const modelList = (modelMapRes as any).data || [];
-    const videoModelItem = modelList.find((item: AiModelMapItem) => item.key === "videoModel");
-
-    if (videoModelItem && videoModelItem.configId) {
-      videoAiModelConfig.value = videoModelItem;
-      allManufacturerDisable.value = true;
-    } else {
-      allManufacturerDisable.value = manufacturerList.value.length === 0;
-    }
+    const res = await axios.post<{ data: VideoModelItem[] }>("/setting/getVideoModelList", { type: "video" });
+    videoModelList.value = Array.isArray(res.data) ? res.data : [];
+    allManufacturerDisable.value = videoModelList.value.length === 0;
   } catch (error) {
-    console.error("Failed to fetch model configuration:", error);
+    console.error("Failed to fetch video model list:", error);
+    videoModelList.value = [];
   } finally {
     configLoading.value = false;
   }
@@ -336,21 +314,14 @@ function addVideoConfig() {
     message.loading("正在加载模型配置，请稍候...");
     return;
   }
-  const defaultManufacturer: string = availableManufacturers.value[0]?.manufacturer || "volcengine";
-  const defaultModel: string = availableManufacturers.value[0]
-    ? manufacturerList.value.find((i) => i.id === availableManufacturers.value[0].value)?.model || ""
-    : "";
-
-  let initialManufacturer = defaultManufacturer;
-  let initialModel = defaultModel;
-  let initialConfigId = undefined;
-
-  // 优先使用动态获取的 videoAiModelConfig
-  if (videoAiModelConfig.value && videoAiModelConfig.value.configId) {
-    initialConfigId = videoAiModelConfig.value.configId;
-    initialManufacturer = videoAiModelConfig.value.configManufacturer || "ricoxueai";
-    initialModel = videoAiModelConfig.value.configModel || "doubao-seedance-1-5-pro-251215";
+  if (videoModelList.value.length === 0) {
+    message.warning("请先在设置中通过「配置超级斜杠API」一键配置视频模型");
+    return;
   }
+  const first = videoModelList.value[0];
+  const initialConfigId = first.id;
+  const initialManufacturer = first.manufacturer;
+  const initialModel = first.model;
 
   const newConfig: VideoConfig = {
     id: ++configIdCounter,

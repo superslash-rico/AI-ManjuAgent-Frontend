@@ -68,7 +68,8 @@
         </h1>
       </div>
 
-      <div class="video-model-card-single" v-if="videoModels.length === 1">
+      <!-- 仅支持单个视频模型，通过上方一键配置 -->
+      <div class="video-model-card-single" v-if="currentVideoModel">
         <a-card class="fixed-video-card">
           <div class="video-card-body-horizontal">
             <div class="video-icon-large">
@@ -76,67 +77,24 @@
             </div>
             <div class="video-info-main">
               <div class="video-model-row">
-                <span class="video-model-name-large">{{ videoModels[0].model }}</span>
-                <a-tag :color="getManufacturerTagColor(videoModels[0].manufacturer)" class="manufacturer-tag-large">
-                  {{ getManufacturerName(videoModels[0].manufacturer) }}
+                <span class="video-model-name-large">{{ currentVideoModel.model }}</span>
+                <a-tag :color="getManufacturerTagColor(currentVideoModel.manufacturer)" class="manufacturer-tag-large">
+                  {{ getManufacturerName(currentVideoModel.manufacturer) }}
                 </a-tag>
               </div>
               <div class="video-detail-row">
                 <div class="detail-item">
                   <span class="detail-label">Base URL:</span>
-                  <span class="detail-value">{{ videoModels[0].baseUrl || "默认" }}</span>
+                  <span class="detail-value">{{ currentVideoModel.baseUrl || "默认" }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">创建时间:</span>
-                  <span class="detail-value">{{ formatTime(videoModels[0].createTime) }}</span>
+                  <span class="detail-value">{{ formatTime(currentVideoModel.createTime) }}</span>
                 </div>
               </div>
-            </div>
-            <div class="video-card-actions">
-              <a-button type="link" @click="editVideoModel(videoModels[0])">修改配置</a-button>
-              <a-popconfirm title="确定要删除此视频模型吗？" ok-text="确定" cancel-text="取消"
-                @confirm="deleteVideoModel(videoModels[0].id)">
-                <a-button type="link" danger>删除模型</a-button>
-              </a-popconfirm>
             </div>
           </div>
         </a-card>
-      </div>
-
-      <div class="video-model-list" v-else-if="videoModels.length > 1">
-        <div v-for="(video, index) in videoModels" :key="video.id" class="video-model-card">
-          <a-card hoverable @click="editVideoModel(video)" class="clickable-card">
-            <template #title>
-              <div class="video-card-title">
-                <div class="video-icon">
-                  <i-video theme="filled" size="18" fill="#9913FA" />
-                </div>
-                <div class="video-info">
-                  <span class="video-model-name">{{ video.model }}</span>
-                  <a-tag :color="getManufacturerTagColor(video.manufacturer)" class="manufacturer-tag">
-                    {{ getManufacturerName(video.manufacturer) }}
-                  </a-tag>
-                </div>
-                <a-popconfirm title="确定要删除此视频模型吗？" ok-text="确定" cancel-text="取消" @confirm="deleteVideoModel(video.id)"
-                  @click.stop>
-                  <a-button danger size="small" class="delete-btn-corner" @click.stop>
-                    <i-delete theme="outline" size="14" fill="currentColor" />
-                  </a-button>
-                </a-popconfirm>
-              </div>
-            </template>
-            <div class="video-card-content">
-              <div class="video-detail-item">
-                <span class="detail-label">Base URL:</span>
-                <span class="detail-value">{{ video.baseUrl || "默认" }}</span>
-              </div>
-              <div class="video-detail-item">
-                <span class="detail-label">创建时间:</span>
-                <span class="detail-value">{{ formatTime(video.createTime) }}</span>
-              </div>
-            </div>
-          </a-card>
-        </div>
       </div>
       <a-empty v-else description="暂无视频模型配置，请使用上方“超级斜杠配置”一键设置" class="empty-state">
         <template #image>
@@ -183,8 +141,10 @@
     <PromptEditor v-model="promptEditorShow" />
     <newModelData v-model:modelDataShow="modelDataShow" :currentType="currentType"
       v-model:configingModel="configingModel" @modelList="modelList" />
+    <!-- 多模型选择已注释，仅通过一键配置
     <ModeListDialog :typeList="['video']" v-model:modelShow="videoModelDialogShow" state="选择视频模型"
       @fetchModelList="onVideoModelDialogClose" />
+    -->
     <addModelDialog v-model="editDialogVisible" v-if="editDialogVisible" v-model:modelForm="editForm"
       @fetchModelList="loadVideoModels" />
   </div>
@@ -195,7 +155,7 @@ import axios from "@/utils/axios";
 import { message, Modal } from "ant-design-vue";
 import PromptEditor from "./components/promptEditor.vue";
 import newModelData from "./components/modelData.vue";
-import ModeListDialog from "./components/modeListDialog.vue";
+// import ModeListDialog from "./components/modeListDialog.vue"; // 多模型已注释
 import addModelDialog from "./components/addModelDialog.vue";
 import modelConfig from "@/config/modelMapping.json";
 
@@ -226,6 +186,9 @@ const videoModels = ref<VideoModelType[]>([]);
 const currentType = ref("");
 const videoModelDialogShow = ref(false);
 
+// 仅展示一个视频模型（取列表首项）
+const currentVideoModel = computed(() => videoModels.value[0] ?? null);
+
 // 全局配置相关
 const globalApiKey = ref("");
 const globalBaseUrl = ref(modelConfig.baseUrl);
@@ -240,7 +203,14 @@ async function autoConfigureAll() {
 
   isBatchConfiguring.value = true;
   try {
-    // 1. 创建所需的 4 个模型
+    // 0. 仅允许一个视频模型，先删除已有视频模型
+    const videoListRes = await axios.post("/setting/getVideoModelList", { type: "video" });
+    const existingVideos = Array.isArray(videoListRes.data) ? videoListRes.data : [];
+    for (const v of existingVideos) {
+      await axios.post("/setting/delModel", { id: v.id });
+    }
+
+    // 1. 创建所需的 4 个模型（text*1, image*2, video*1）
     const modelSpecs = [
       { type: "text", model: GLOBAL_MODEL_MAPPING.text },
       { type: "image", model: GLOBAL_MODEL_MAPPING.image.default },
@@ -358,11 +328,11 @@ function startConfig(item: ModelType) {
   modelDataShow.value = true;
 }
 
-// 添加视频模型
-function addVideoModel() {
-  editingVideoModel.value = null;
-  videoModelDialogShow.value = true;
-}
+// 添加视频模型（已注释，仅通过一键配置）
+// function addVideoModel() {
+//   editingVideoModel.value = null;
+//   videoModelDialogShow.value = true;
+// }
 
 // 编辑视频模型
 function editVideoModel(model: VideoModelType) {
@@ -869,6 +839,85 @@ async function deleteAllData() {
               white-space: nowrap;
             }
           }
+        }
+      }
+    }
+
+    .video-model-card-single {
+      .fixed-video-card {
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        background: white;
+
+        :deep(.ant-card-body) {
+          padding: 20px 24px;
+        }
+      }
+
+      .video-card-body-horizontal {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+
+        .video-icon-large {
+          flex-shrink: 0;
+          width: 56px;
+          height: 56px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #f5f0ff 0%, #ede9fe 100%);
+          border-radius: 12px;
+        }
+
+        .video-info-main {
+          flex: 1;
+          min-width: 0;
+
+          .video-model-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+
+            .video-model-name-large {
+              font-size: 16px;
+              font-weight: 600;
+              color: #1f2937;
+            }
+
+            .manufacturer-tag-large {
+              margin: 0;
+            }
+          }
+
+          .video-detail-row {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+
+            .detail-item {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .detail-label {
+                color: #6b7280;
+                font-weight: 500;
+              }
+
+              .detail-value {
+                color: #1f2937;
+              }
+            }
+          }
+        }
+
+        .video-card-actions {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
       }
     }

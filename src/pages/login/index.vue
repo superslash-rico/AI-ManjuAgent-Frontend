@@ -57,6 +57,10 @@
               <code>admin123</code>
             </p>
             <p>登录后可在设置中修改</p>
+            <div class="qr-wrap">
+              <img :src="qrImg" alt="客服微信" class="qr-img" />
+              <p class="qr-label">若有任何问题，请联系客服微信：ricoxueai</p>
+            </div>
           </div>
         </template>
       </a-alert>
@@ -68,6 +72,10 @@
               格式示例：
               <code>sk-xxxxxxxxxxxxxxxx</code>
             </p>
+            <div class="qr-wrap">
+              <img :src="qrImg" alt="客服微信" class="qr-img" />
+              <p class="qr-label">若有任何问题，请联系客服微信：ricoxueai</p>
+            </div>
           </div>
         </template>
       </a-alert>
@@ -80,6 +88,7 @@ import { computed, ref, onMounted } from "vue";
 import Router from "@/router/index.ts";
 import { message } from "ant-design-vue";
 import logo from "@/assets/logo.png";
+import qrImg from "@/assets/qr.png";
 import axios from "@/utils/axios";
 
 const svgRef = ref(null);
@@ -270,6 +279,23 @@ const resSvg = async () => {
     font-weight: 500;
     font-size: 13px;
     border: 1px solid #e8d5ff;
+  }
+}
+
+.qr-wrap {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .qr-label {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #6C01CE;
+  }
+  .qr-img {
+    width: 120px;
+    height: 120px;
   }
 }
 </style>
