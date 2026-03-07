@@ -31,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+import axios from "@/utils/axios";
 import store from "@/stores";
 const { activeMenu } = storeToRefs(store());
 // ,{path:"/taskList",label:"任务列表",icon:"i-list-two"}
@@ -42,10 +43,12 @@ function handleClick(path: string) {
 }
 
 function handleLogout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userId");
-  activeMenu.value = "/project";
-  router.push("/login");
+  axios.post("/other/logout").finally(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    activeMenu.value = "/project";
+    router.push("/login");
+  });
 }
 </script>
 

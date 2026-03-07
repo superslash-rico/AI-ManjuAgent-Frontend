@@ -22,7 +22,10 @@
             </div>
             <a-button type="primary" size="middle" :loading="isBatchConfiguring" @click="autoConfigureAll"
               class="compact-btn">
-              配置
+              一键配置
+            </a-button>
+            <a-button size="middle" :loading="isSavingApiKey" @click="saveApiKeyOnly" class="compact-btn">
+              仅保存
             </a-button>
           </div>
         </div>
@@ -193,8 +196,22 @@ const currentVideoModel = computed(() => videoModels.value[0] ?? null);
 const globalApiKey = ref("");
 const globalBaseUrl = ref(modelConfig.baseUrl);
 const isBatchConfiguring = ref(false);
+const isSavingApiKey = ref(false);
 
 const GLOBAL_MODEL_MAPPING = modelConfig.globalMAPPING;
+
+async function saveApiKeyOnly() {
+  if (!globalApiKey.value) return message.warning("请先输入 API Key");
+  isSavingApiKey.value = true;
+  try {
+    await axios.post("/setting/saveGlobalApiKey", { apiKey: globalApiKey.value });
+    message.success("API Key 已保存");
+  } catch (e) {
+    message.error("保存失败");
+  } finally {
+    isSavingApiKey.value = false;
+  }
+}
 
 async function autoConfigureAll() {
   if (!globalApiKey.value) {
@@ -265,8 +282,8 @@ async function autoConfigureAll() {
       }
     }
 
+    await axios.post("/setting/saveGlobalApiKey", { apiKey: globalApiKey.value });
     message.success("全局模型配置并激活成功！");
-    globalApiKey.value = "";
     modelList();
     loadVideoModels();
   } catch (error) {
@@ -287,9 +304,16 @@ const editingVideoModel = ref<VideoModelType | null>({
   type: "video",
 });
 const editDialogVisible = ref(false);
+async function loadGlobalApiKey() {
+  const res = await axios.post("/setting/getGlobalApiKey");
+  const key = res?.data ?? "";
+  globalApiKey.value = typeof key === "string" ? key : key?.apiKey ?? "";
+}
+
 onMounted(() => {
   modelList();
   loadVideoModels();
+  loadGlobalApiKey();
 });
 
 async function modelList() {

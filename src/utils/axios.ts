@@ -22,8 +22,10 @@ instance.interceptors.response.use(
     return response.data;
   },
   function (error) {
-    if (error.status === 401) {
+    const status = error?.response?.status;
+    if (status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("userId");
       router.push("/login");
       message.error("登录已过期，请重新登录");
     }
