@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import Router from "@/router/index.ts";
+import Router from "@/router/index";
 import { message } from "ant-design-vue";
 import logo from "@/assets/logo.png";
 import axios from "@/utils/axios";
