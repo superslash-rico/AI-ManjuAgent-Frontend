@@ -6,76 +6,35 @@
         <img :src="logo" alt="logo" class="logo-img" />
         <span class="logo-text">AI漫剧智能体</span>
       </div>
-      <div class="login-type-switch">
-        <a-radio-group v-model:value="loginType" button-style="solid">
-          <a-radio-button value="account">账号登录</a-radio-button>
-          <a-radio-button value="apikey">APIKey登录</a-radio-button>
-        </a-radio-group>
-      </div>
       <a-form :model="state.user" :rules="formRules" ref="ruleFormRef" @finish="handleFinish" class="login-form">
-        <template v-if="loginType === 'account'">
-          <a-form-item name="username">
-            <a-input v-model:value="state.user.username" placeholder="请输入账号" autocomplete="username" size="large">
-              <template #prefix>
-                <i-people theme="outline" class="input-icon" />
-              </template>
-            </a-input>
-          </a-form-item>
-          <a-form-item name="password">
-            <a-input-password v-model:value="state.user.password" placeholder="请输入密码" size="large">
-              <template #prefix>
-                <i-lock theme="outline" class="input-icon" />
-              </template>
-            </a-input-password>
-          </a-form-item>
-        </template>
-        <template v-else>
-          <a-form-item name="apiKey">
-            <a-input-password
-              v-model:value="state.user.apiKey"
-              placeholder="请输入APIKey（以 sk- 开头）"
-              autocomplete="off"
-              size="large"
-            />
-          </a-form-item>
-        </template>
+        <a-form-item name="apiKey">
+          <a-input-password
+            v-model:value="state.user.apiKey"
+            placeholder="请输入APIKey（以 sk- 开头）"
+            autocomplete="off"
+            size="large"
+          />
+        </a-form-item>
         <a-form-item>
           <a-button class="loginBtn" type="primary" size="large" :loading="state.loginLoading" html-type="submit" block>
-            {{ loginType === "account" ? "登录" : "APIKey登录" }}
+            APIKey登录
           </a-button>
         </a-form-item>
       </a-form>
-      <a-alert v-if="showHint && loginType === 'account'" class="default-hint" type="info" closable @close="showHint = false">
+      <a-alert class="default-hint" type="info">
         <template #message>
           <div class="hint-content">
-            <p>
-              默认账号：
-              <code>admin</code>
-            </p>
-            <p>
-              默认密码：
-              <code>admin123</code>
-            </p>
-            <p>登录后可在设置中修改</p>
-            <div class="qr-wrap">
-              <img :src="qrImg" alt="客服微信" class="qr-img" />
-              <p class="qr-label">若有任何问题，请联系客服微信：ricoxueai</p>
-            </div>
-          </div>
-        </template>
-      </a-alert>
-      <a-alert v-if="loginType === 'apikey'" class="default-hint" type="info">
-        <template #message>
-          <div class="hint-content">
-            <p>请输入超级斜杠 APIKey</p>
+            <p>请输入 APIKey</p>
             <p>
               格式示例：
               <code>sk-xxxxxxxxxxxxxxxx</code>
             </p>
+            <!-- 微信二维码已隐藏，后续如需显示可取消注释
             <div class="qr-wrap">
               <img :src="qrImg" alt="客服微信" class="qr-img" />
               <p class="qr-label">若有任何问题，请联系客服微信：ricoxueai</p>
             </div>
+            -->
           </div>
         </template>
       </a-alert>
@@ -83,77 +42,46 @@
   </div>
 </template>
 
-<script setup>
-import { computed, ref, onMounted } from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
 import Router from "@/router/index.ts";
 import { message } from "ant-design-vue";
 import logo from "@/assets/logo.png";
-import qrImg from "@/assets/qr.png";
 import axios from "@/utils/axios";
 
-const svgRef = ref(null);
-const showHint = ref(true);
-const loginType = ref("account");
 const state = ref({
   show: true,
   loginLoading: false,
-  user: {
-    username: "",
-    password: "",
-    apiKey: "",
-  },
+  user: { apiKey: "" },
 });
 
-const formRules = computed(() =>
-  loginType.value === "account"
-    ? {
-        username: [{ required: true, message: "请输入您的账号" }],
-        password: [{ required: true, message: "请输入密码" }],
-      }
-    : {
-        apiKey: [
-          { required: true, message: "请输入APIKey" },
-          {
-            validator: (_rule, value) =>
-              value?.startsWith("sk-") ? Promise.resolve() : Promise.reject("APIKey格式错误，必须以'sk-'开头"),
-          },
-        ],
-      },
-);
+const formRules = {
+  apiKey: [
+    { required: true, message: "请输入APIKey" },
+    {
+      validator: (_rule: any, value: string) =>
+        value?.startsWith("sk-") ? Promise.resolve() : Promise.reject("APIKey格式错误，必须以'sk-'开头"),
+    },
+  ],
+};
 
-const svg = ref();
-const captcha = ref();
-
-onMounted(() => {
-  resSvg();
-});
-const handleFinish = (values) => {
+const handleFinish = (values: { apiKey: string }) => {
   state.value.loginLoading = true;
-  const isApiKeyLogin = loginType.value === "apikey";
-  const loginPath = isApiKeyLogin ? "/other/apiKeyLogin" : "/other/login";
-  const obj = isApiKeyLogin ? { apiKey: values.apiKey } : { username: values.username, password: values.password };
   axios
-    .post(loginPath, obj)
+    .post("/other/apiKeyLogin", { apiKey: values.apiKey })
     .then(({ data }) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.id);
       Router.push("/project");
-      message.success(isApiKeyLogin ? "APIKey登录成功" : "登录成功");
+      message.success("APIKey登录成功");
       state.value.loginLoading = false;
     })
     .catch((e) => {
       state.value.loginLoading = false;
       message.error(e.message);
-      resSvg();
     });
 };
 
-const resSvg = async () => {
-  return;
-  const { data } = await axios.get("/other/getCaptcha");
-  svgRef.value.innerHTML = data.svg;
-  captcha.value = data.captcha;
-};
 </script>
 
 <style lang="scss" scoped>
@@ -223,12 +151,6 @@ const resSvg = async () => {
       :deep(.ant-form-item) {
         margin-bottom: 20px;
       }
-    }
-
-    .login-type-switch {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
     }
 
     .loginBtn {

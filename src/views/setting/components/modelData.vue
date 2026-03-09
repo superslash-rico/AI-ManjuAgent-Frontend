@@ -195,6 +195,7 @@ import axios from "@/utils/axios";
 import modeListDialog from "./modeListDialog.vue";
 import addModelDialog from "./addModelDialog.vue";
 import { ElMessage } from "element-plus";
+import { AI_API_BASE_URL, AI_API_BASE_URL_V1 } from "@/config/api";
 const modelDataShow = defineModel("modelDataShow", {
   type: Boolean,
   required: true,
@@ -272,7 +273,7 @@ function addModelBtn() {
     modelType: "",
     model: "",
     apiKey: "",
-    baseUrl: manufacturerDefaultBaseUrls["ricoxueai"]?.[props.currentType] || "https://api.ricoxueai.cn/v1",
+    baseUrl: manufacturerDefaultBaseUrls["ricoxueai"]?.[props.currentType] || AI_API_BASE_URL_V1,
     manufacturer: "ricoxueai",
     createTime: 0,
   };
@@ -319,7 +320,7 @@ const websites = ref<Record<string, string>>({
   anthropic: "",
   runninghub: "https://www.runninghub.cn/enterprise-api/consumerApi",
   gemini: "https://ai.google.dev/gemini-api/docs/api-key?hl=zh-cn",
-  ricoxueai: "https://api.ricoxueai.cn/pricing",
+  ricoxueai: `${AI_API_BASE_URL}/pricing`,
 });
 
 const currentWebsite = computed(() => {
@@ -380,9 +381,9 @@ const manufacturerDefaultBaseUrls: Record<string, Record<string, string>> = {
     text: "https://generativelanguage.googleapis.com",
   },
   ricoxueai: {
-    text: "https://api.ricoxueai.cn/v1",
-    image: "https://api.ricoxueai.cn/v1",
-    video: "https://api.ricoxueai.cn/v1",
+    text: AI_API_BASE_URL_V1,
+    image: AI_API_BASE_URL_V1,
+    video: AI_API_BASE_URL_V1,
   },
 };
 

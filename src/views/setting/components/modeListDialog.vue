@@ -142,6 +142,7 @@ import { message, Empty } from "ant-design-vue";
 import { SearchOutlined, FilterOutlined, PlusOutlined, LoadingOutlined } from "@ant-design/icons-vue";
 import addModelDialog from "./addModelDialog.vue";
 import originAxios from "axios";
+import { AI_API_BASE_URL, AI_API_BASE_URL_V1 } from "@/config/api";
 
 // 获取超级斜杠模型列表（独立实例，不走项目 baseURL，走 Vite proxy）
 function fetchRicoxueaiPricing() {
@@ -194,7 +195,7 @@ const websites = ref<Record<string, string>>({
   anthropic: "",
   runninghub: "https://www.runninghub.cn/enterprise-api/consumerApi",
   gemini: "https://ai.google.dev/gemini-api/docs/api-key?hl=zh-cn",
-  ricoxueai: "https://api.ricoxueai.cn/pricing",
+  ricoxueai: `${AI_API_BASE_URL}/pricing`,
 });
 
 const currentWebsite = computed(() => {
@@ -308,9 +309,9 @@ const manufacturerDefaultBaseUrls: Record<string, Record<string, string>> = {
     video: "",
   },
   ricoxueai: {
-    text: "https://api.ricoxueai.cn/v1",
-    image: "https://api.ricoxueai.cn/v1",
-    video: "https://api.ricoxueai.cn/v1",
+    text: AI_API_BASE_URL_V1,
+    image: AI_API_BASE_URL_V1,
+    video: AI_API_BASE_URL_V1,
   },
   runninghub: {
     text: "",
@@ -400,7 +401,7 @@ const fetchRicoxueaiModels = async () => {
           model: item.model_name,
           modelName: item.model_name,
           description: item.description || "",
-          baseUrl: manufacturerDefaultBaseUrls["ricoxueai"]?.text || "https://api.ricoxueai.cn/v1",
+          baseUrl: manufacturerDefaultBaseUrls["ricoxueai"]?.text || AI_API_BASE_URL_V1,
           tabType: type,
           price: item.model_price,
           tags: item.tags ? item.tags.split(",") : [],

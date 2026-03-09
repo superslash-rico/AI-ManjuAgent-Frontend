@@ -158,6 +158,7 @@ import newModelData from "./components/modelData.vue";
 // import ModeListDialog from "./components/modeListDialog.vue"; // 多模型已注释
 import addModelDialog from "./components/addModelDialog.vue";
 import modelConfig from "@/config/modelMapping.json";
+import { AI_API_BASE_URL_V1 } from "@/config/api";
 
 import dayjs from "dayjs";
 
@@ -191,7 +192,7 @@ const currentVideoModel = computed(() => videoModels.value[0] ?? null);
 
 // 全局配置相关
 const globalApiKey = ref("");
-const globalBaseUrl = ref(modelConfig.baseUrl);
+const globalBaseUrl = ref(AI_API_BASE_URL_V1);
 const isBatchConfiguring = ref(false);
 
 const GLOBAL_MODEL_MAPPING = modelConfig.globalMAPPING;

@@ -28,6 +28,7 @@ import axios from "@/utils/axios";
 import { ElMessage } from "element-plus";
 import { ref, computed, watch } from "vue";
 import modelConfig from "@/config/modelMapping.json";
+import { AI_API_BASE_URL_V1 } from "@/config/api";
 interface RowData {
   id: number;
   name: string;
@@ -92,10 +93,10 @@ watch(
   ([newAgentKey, newType]) => {
     if (newAgentKey && (AGENT_MODEL_MAP as any)[newAgentKey as string]) {
       modelForm.value.model = (AGENT_MODEL_MAP as any)[newAgentKey as string];
-      modelForm.value.baseUrl = modelConfig.baseUrl;
+      modelForm.value.baseUrl = AI_API_BASE_URL_V1;
     } else if (newType === "video") {
       modelForm.value.model = modelConfig.globalMAPPING.video;
-      modelForm.value.baseUrl = modelConfig.baseUrl;
+      modelForm.value.baseUrl = AI_API_BASE_URL_V1;
     }
   },
   { immediate: true },
